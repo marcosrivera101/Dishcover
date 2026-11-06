@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// Dishcover security rules (step 1 plan): interview answers are owner-only; dishes and
+// ratings are readable by signed-in users; only a dish's creator edits or removes it;
+// flags and reports are create-only; identity always comes from the auth token.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function isStr(v, max) { return v is string && v.size() <= max; }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && me() == uid;
+    }
+
+    match /places/{placeId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy == me()
+        && isStr(request.resource.data.name, 60);
+      // Anyone may refresh Google's cached coordinates; nothing else changes.
+      allow update: if signedIn() && changed().hasOnly(['lat', 'lng', 'gh4', 'coordsCachedAt']);
+    }
+
+    match /dishes/{dishId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy == me()
+        && isStr(request.resource.data.name, 80)
+        && isStr(request.resource.data.price, 20)
+        && request.resource.data.categories is list
+        && request.resource.data.ratingSum == 0
+        && request.resource.data.ratingCount == 0;
+      allow update: if signedIn() && (
+        // The creator edits the details.
+        (resource.data.createdBy == me()
+          && changed().hasOnly(['name', 'description', 'categories', 'price', 'allergens', 'confirmedAt'])
+          && isStr(request.resource.data.name, 80))
+        // Refreshing the nearby cell along with its place.
+        || changed().hasOnly(['gh4'])
+        // Rating totals move only together with the caller's own rating document.
+        || (changed().hasOnly(['ratingSum', 'ratingCount'])
+          && request.resource.data.ratingCount - resource.data.ratingCount <= 1
+          && request.resource.data.ratingCount - resource.data.ratingCount >= -1
+          && request.resource.data.ratingSum - resource.data.ratingSum <= 5
+          && request.resource.data.ratingSum - resource.data.ratingSum >= -5
+          && (existsAfter(/databases/$(database)/documents/ratings/$(dishId + '_' + me()))
+            || exists(/databases/$(database)/documents/ratings/$(dishId + '_' + me()))))
+      );
+      allow delete: if signedIn() && resource.data.createdBy == me();
+    }
+
+    match /ratings/{ratingId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.userId == me()
+        && ratingId == request.resource.data.dishId + '_' + me()
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && isStr(request.resource.data.text, 500);
+      allow delete: if signedIn() && resource.data.userId == me();
+    }
+
+    match /flags/{id} {
+      allow create: if signedIn() && request.resource.data.by == me();
+    }
+    match /reports/{id} {
+      allow create: if signedIn() && request.resource.data.by == me();
+    }
+    // usage/ counters are written only by the menu-reader function (admin access).
+  }
+}
