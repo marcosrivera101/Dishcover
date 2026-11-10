@@ -41,7 +41,9 @@ object Categories {
             Meal.Lunch -> listOf("sandwich", "salad")
             Meal.Dinner -> listOf("sushi", "pasta")
         }
-        return listOf("burger", "tacos", "pizza") + extra + ""
+        // Morning leads with breakfast picks; later in the day the staples come first.
+        val staples = listOf("burger", "tacos", "pizza")
+        return (if (meal == Meal.Breakfast) extra + staples else staples + extra) + ""
     }
 
     fun defaultMood(meal: Meal): String = when (meal) {
