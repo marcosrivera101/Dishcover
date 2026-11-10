@@ -34,7 +34,10 @@ class WalkthroughTest {
         Thread.sleep(700)
         val inst = InstrumentationRegistry.getInstrumentation()
         val dir = File(inst.targetContext.filesDir, "shots").apply { mkdirs() }
-        val bmp = inst.uiAutomation.takeScreenshot() ?: return
+        var bmp = inst.uiAutomation.takeScreenshot()
+        var tries = 0
+        while (bmp == null && tries++ < 5) { Thread.sleep(500); bmp = inst.uiAutomation.takeScreenshot() }
+        if (bmp == null) return
         n++
         File(dir, "%02d-%s.png".format(n, name)).outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
