@@ -47,11 +47,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="test-${GITHUB_REF_NAME//\//-}"
-          gh release delete "$TAG" --yes --cleanup-tag || true
-          gh release create "$TAG" dishcover-*.apk --prerelease --target "$GITHUB_SHA" \
-            --title "Test build ${{ steps.version.outputs.name }} (${GITHUB_REF_NAME})" \
-            --notes "Install: open this page on your Android phone, tap the .apk file, then open it and allow the install. Built from ${GITHUB_SHA::7}."
+          NOTES="Newest test build: ${{ steps.version.outputs.name }} from ${GITHUB_REF_NAME} (${GITHUB_SHA::7}). On your Android phone, tap the .apk below, then open it and allow the install."
+          gh release view test-builds >/dev/null 2>&1 || gh release create test-builds --prerelease --title "Dishcover test builds" --notes "$NOTES"
+          cp dishcover-*.apk dishcover.apk
+          gh release upload test-builds dishcover.apk --clobber
+          gh release edit test-builds --notes "$NOTES"
 
       # Goes live on main once the FIREBASE_SERVICE_ACCOUNT secret exists: publishes the database
       # and storage rules, then offers the new build to phones through the in-app update.
@@ -124,7 +124,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="test-${GITHUB_REF_NAME//\//-}"
+          TAG=test-builds
           (cd shots 2>/dev/null && zip -q ../screens.zip *.png) || true
           gh release upload "$TAG" walkthrough.txt crash.txt screens.zip --clobber || gh release upload "$TAG" walkthrough.txt crash.txt --clobber || true
           cat walkthrough.txt || true
