@@ -209,12 +209,12 @@ fun FeedScreen(vm: AppViewModel, nav: NavHostController) {
                                 }
                             }
                             val showNews = filter == "all" && settings.showNews && news.isNotEmpty()
-                            items.forEachIndexed { i, item ->
-                                item(key = item.id) {
+                            items.forEachIndexed { i, entry ->
+                                item(key = entry.id) {
                                     FeedCard(
-                                        item, vm, nav, loc,
-                                        liked = item.id in profile?.likedFeed.orEmpty(),
-                                        mine = item.userId == user?.id,
+                                        entry, vm, nav, loc,
+                                        liked = entry.id in profile?.likedFeed.orEmpty(),
+                                        mine = entry.userId == user?.id,
                                     )
                                 }
                                 // A headline every six entries keeps the feed varied without burying it.
