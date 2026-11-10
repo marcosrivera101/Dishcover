@@ -50,7 +50,7 @@ import app.godishcover.ui.Thumb
 import app.godishcover.ui.catLabel
 
 @Composable
-fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String) {
+fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, initialHealthy: Boolean = false) {
     val dishes by vm.dishes.collectAsState()
     val places by vm.places.collectAsState()
     val ratings by vm.myRatings.collectAsState()
@@ -61,12 +61,18 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String) {
     var cat by rememberSaveable { mutableStateOf(initialCat) }
     var nearOnly by rememberSaveable { mutableStateOf(true) }
     var tab by rememberSaveable { mutableStateOf("dishes") }
+    var healthy by rememberSaveable { mutableStateOf(initialHealthy) }
+    var tag by rememberSaveable { mutableStateOf("") }
+    val settings by vm.settings.collectAsState()
+    @Suppress("UNUSED_VARIABLE") val deps2 = settings
 
     LaunchedEffect(tab, loc) { if (tab == "places") vm.searchGoogle(query) }
 
     val q = query.trim().lowercase()
     val dishResults = dishes.asSequence()
         .filter { cat.isEmpty() || cat in it.categories }
+        .filter { !healthy || Suggest.isHealthy(it) }
+        .filter { tag.isEmpty() || tag in it.tags }
         .filter { q.isEmpty() || it.name.lowercase().contains(q) || it.placeName.lowercase().contains(q) }
         .map { vm.view(it) }
         .filter { !nearOnly || it.distanceKm == null || it.distanceKm <= Suggest.MAX_KM }
@@ -92,11 +98,15 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String) {
             )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item { Chip("Near me", nearOnly, onClick = { nearOnly = !nearOnly }) }
+                item { Chip("Healthy", healthy, onClick = { healthy = !healthy }, kind = app.godishcover.ui.ChipKind.Try) }
                 items(Categories.ALL) { c -> Chip(catLabel(c), c == cat, onClick = { cat = if (cat == c) "" else c }) }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("Dishes", tab == "dishes", onClick = { tab = "dishes" })
-                Chip("Restaurants", tab == "places", onClick = { tab = "places" })
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item { Chip("Dishes", tab == "dishes", onClick = { tab = "dishes" }) }
+                item { Chip("Restaurants", tab == "places", onClick = { tab = "places" }) }
+                items(Categories.TAGS - Categories.HEALTHY) { t ->
+                    Chip(catLabel(t), tag == t, onClick = { tag = if (tag == t) "" else t; tab = "dishes" })
+                }
             }
         }
         LazyColumn(

@@ -39,6 +39,8 @@ fun MeScreen(vm: AppViewModel, nav: NavHostController) {
     val user by vm.user.collectAsState()
     val profile by vm.profile.collectAsState()
     val ratings by vm.myRatings.collectAsState()
+    val places by vm.places.collectAsState()
+    val loc by vm.location.collectAsState()
     var confirmDelete by remember { mutableStateOf(false) }
     val p = profile
 
@@ -61,6 +63,17 @@ fun MeScreen(vm: AppViewModel, nav: NavHostController) {
             }
             SecondaryButton("Redo taste interview", onClick = { nav.navigate(Routes.INTERVIEW) }, modifier = Modifier.fillMaxWidth())
         }
+
+        val saved = places.filter { it.id in p?.savedPlaces.orEmpty() }
+        if (saved.isNotEmpty()) {
+            SectionTitle("Saved places")
+            saved.forEach { sp -> PlaceRow(sp, loc, "Saved") { nav.navigate(Routes.place(sp.id)) } }
+        }
+
+        SectionTitle("App")
+        SecondaryButton("Settings", onClick = { nav.navigate(Routes.SETTINGS) }, modifier = Modifier.fillMaxWidth())
+        SecondaryButton("About, updates and change log", onClick = { nav.navigate(Routes.ABOUT) }, modifier = Modifier.fillMaxWidth())
+        SecondaryButton("Help, ideas and error reports", onClick = { nav.navigate(Routes.HELP) }, modifier = Modifier.fillMaxWidth())
 
         SectionTitle("Account")
         SecondaryButton("Terms and Community rules", onClick = { nav.navigate(Routes.RULES) }, modifier = Modifier.fillMaxWidth())

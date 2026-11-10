@@ -270,6 +270,13 @@ private fun DraftEditor(d: DraftDish, onChange: (DraftDish) -> Unit) {
                 Chip(catLabel(c), on, onClick = { onChange(d.copy(categories = if (on) d.categories - c else d.categories + c)) })
             }
         }
+        Note("Anything special about it?")
+        ChipFlow {
+            Categories.TAGS.forEach { t ->
+                val on = t in d.tags
+                Chip(catLabel(t), on, kind = app.godishcover.ui.ChipKind.Try, onClick = { onChange(d.copy(tags = if (on) d.tags - t else d.tags + t)) })
+            }
+        }
         TextButton(onClick = { onChange(d.copy(keep = !d.keep)) }) {
             Text(if (d.keep) "Skip this dish" else "Keep this dish", color = Dc.Muted)
         }

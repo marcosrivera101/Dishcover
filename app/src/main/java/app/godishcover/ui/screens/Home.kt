@@ -1,6 +1,5 @@
 package app.godishcover.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import app.godishcover.R
 import app.godishcover.data.Categories
 import app.godishcover.data.Geo
 import app.godishcover.ui.AllergyNote
@@ -53,6 +50,14 @@ import app.godishcover.ui.PrimaryButton
 import app.godishcover.ui.Routes
 import app.godishcover.ui.SectionTitle
 import app.godishcover.ui.TopBar
+import app.godishcover.ui.Wordmark
+import app.godishcover.ui.SecondaryButton
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextOverflow
+import app.godishcover.ui.Tag
+import app.godishcover.ui.TagKind
+import app.godishcover.data.average
 import app.godishcover.ui.Card
 import app.godishcover.ui.catLabel
 
@@ -69,14 +74,15 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
     var mood by rememberSaveable { mutableStateOf(Categories.defaultMood(meal)) }
     val name = profile?.publicName.orEmpty().substringBefore(' ')
     val placesNow by vm.places.collectAsState()
-    @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, placesNow)
+    val settings by vm.settings.collectAsState()
+    @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, placesNow, settings)
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.wordmark), contentDescription = "Dishcover", modifier = Modifier.height(30.dp))
+            Wordmark(30.dp)
             Spacer(Modifier.weight(1f))
             Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Dc.Wine, modifier = Modifier.size(18.dp))
             Text(
@@ -104,8 +110,30 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
             )
         }
 
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SecondaryButton("Healthy picks", onClick = { nav.navigate(Routes.search(healthy = true)) }, modifier = Modifier.weight(1f))
+            SecondaryButton("Share a bite", onClick = { nav.navigate(Routes.post()) }, modifier = Modifier.weight(1f))
+        }
+
+        val trending = vm.trending().take(8)
+        if (trending.isNotEmpty()) {
+            SectionTitle("Trending near you")
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(trending, key = { it.dish.id }) { v ->
+                    Card(Modifier.width(200.dp), onClick = { nav.navigate(Routes.dish(v.dish.id)) }) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(v.dish.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(v.dish.placeName, style = MaterialTheme.typography.bodySmall, color = Dc.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Tag("★ " + String.format("%.1f", v.dish.average) + " · ${v.dish.ratingCount} ratings", TagKind.You)
+                        }
+                    }
+                }
+            }
+        }
+
         val top = vm.topRated()
         val want = vm.wantToTry()
+        val healthy = vm.healthyPicks().take(3)
         if (top.isNotEmpty()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SectionTitle("Your top-rated nearby", Modifier.weight(1f))
@@ -116,6 +144,14 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
         if (want.isNotEmpty()) {
             SectionTitle("On your want-to-try list")
             want.forEach { v -> DishRow(v) { nav.navigate(Routes.dish(v.dish.id)) } }
+        }
+        if (healthy.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SectionTitle("Healthy picks", Modifier.weight(1f))
+                TextButton(onClick = { nav.navigate(Routes.search(healthy = true)) }) { Text("See all", color = Dc.Wine) }
+            }
+            healthy.forEach { v -> DishRow(v) { nav.navigate(Routes.dish(v.dish.id)) } }
+            Note("Tagged healthy by the people who added them.")
         }
         if (top.isEmpty() && want.isEmpty()) {
             if (dishes.isEmpty()) {
@@ -139,7 +175,8 @@ fun SuggestionsScreen(vm: AppViewModel, nav: NavHostController, category: String
     val loc by vm.location.collectAsState()
     val profile by vm.profile.collectAsState()
     val placesNow by vm.places.collectAsState()
-    @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, profile, placesNow)
+    val settings by vm.settings.collectAsState()
+    @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, profile, placesNow, settings)
     val meal = remember { AppViewModel.mealNow }
     val list = vm.suggestions(category)
     Column(Modifier.fillMaxSize()) {

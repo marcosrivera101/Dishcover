@@ -18,9 +18,21 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.createdBy == me()
-        && isStr(request.resource.data.name, 60);
-      // Anyone may refresh Google's cached coordinates; nothing else changes.
-      allow update: if signedIn() && changed().hasOnly(['lat', 'lng', 'gh4', 'coordsCachedAt']);
+        && isStr(request.resource.data.name, 60)
+        && request.resource.data.ratingSum == 0
+        && request.resource.data.ratingCount == 0;
+      allow update: if signedIn() && (
+        // Anyone may refresh Google's cached coordinates; nothing else changes.
+        changed().hasOnly(['lat', 'lng', 'gh4', 'coordsCachedAt'])
+        // Review totals move only together with the caller's own review of the place.
+        || (changed().hasOnly(['ratingSum', 'ratingCount'])
+          && request.resource.data.ratingCount - resource.data.ratingCount <= 1
+          && request.resource.data.ratingCount - resource.data.ratingCount >= -1
+          && request.resource.data.ratingSum - resource.data.ratingSum <= 5
+          && request.resource.data.ratingSum - resource.data.ratingSum >= -5
+          && (existsAfter(/databases/$(database)/documents/placeRatings/$(placeId + '_' + me()))
+            || exists(/databases/$(database)/documents/placeRatings/$(placeId + '_' + me()))))
+      );
     }
 
     match /dishes/{dishId} {
@@ -35,12 +47,12 @@ service cloud.firestore {
       allow update: if signedIn() && (
         // The creator edits the details.
         (resource.data.createdBy == me()
-          && changed().hasOnly(['name', 'description', 'categories', 'price', 'allergens', 'confirmedAt'])
+          && changed().hasOnly(['name', 'description', 'categories', 'price', 'allergens', 'tags', 'confirmedAt'])
           && isStr(request.resource.data.name, 80))
         // Refreshing the nearby cell along with its place.
         || changed().hasOnly(['gh4'])
         // Rating totals move only together with the caller's own rating document.
-        || (changed().hasOnly(['ratingSum', 'ratingCount'])
+        || (changed().hasOnly(['ratingSum', 'ratingCount', 'lastRatedAt'])
           && request.resource.data.ratingCount - resource.data.ratingCount <= 1
           && request.resource.data.ratingCount - resource.data.ratingCount >= -1
           && request.resource.data.ratingSum - resource.data.ratingSum <= 5
@@ -60,6 +72,40 @@ service cloud.firestore {
         && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
         && isStr(request.resource.data.text, 500);
       allow delete: if signedIn() && resource.data.userId == me();
+    }
+
+    match /placeRatings/{ratingId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.userId == me()
+        && ratingId == request.resource.data.dishId + '_' + me()
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && isStr(request.resource.data.text, 500);
+      allow delete: if signedIn() && resource.data.userId == me();
+    }
+
+    // The "what's new" feed. Entries stay until their author removes them.
+    match /feed/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == me()
+        && request.resource.data.type in ['menu', 'place', 'review', 'post']
+        && isStr(request.resource.data.text, 500)
+        && isStr(request.resource.data.placeName, 80)
+        && request.resource.data.likeCount == 0;
+      // Likes move the counter one step at a time.
+      allow update: if signedIn()
+        && changed().hasOnly(['likeCount'])
+        && request.resource.data.likeCount - resource.data.likeCount <= 1
+        && request.resource.data.likeCount - resource.data.likeCount >= -1
+        && request.resource.data.likeCount >= 0;
+      allow delete: if signedIn() && resource.data.userId == me();
+    }
+
+    // App settings published by Marcos (newest version and its download link).
+    match /config/{doc} {
+      allow read: if signedIn();
     }
 
     match /flags/{id} {

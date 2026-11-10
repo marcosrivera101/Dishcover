@@ -57,6 +57,7 @@ import app.godishcover.ui.Note
 import app.godishcover.ui.PrimaryButton
 import app.godishcover.ui.SecondaryButton
 import app.godishcover.ui.TopBar
+import app.godishcover.ui.Wordmark
 import app.godishcover.ui.catLabel
 
 @Composable
@@ -76,7 +77,7 @@ fun WelcomeScreen(vm: AppViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Spacer(Modifier.height(12.dp))
-        Image(painterResource(R.drawable.wordmark), contentDescription = "Dishcover", modifier = Modifier.height(44.dp))
+        Wordmark(44.dp)
         Image(
             painterResource(R.drawable.plate), contentDescription = null,
             modifier = Modifier.size(180.dp).align(Alignment.CenterHorizontally),

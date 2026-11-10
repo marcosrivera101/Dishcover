@@ -8,7 +8,9 @@ import { initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { defineSecret } from "firebase-functions/params";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { getMessaging } from "firebase-admin/messaging";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 
@@ -26,6 +28,7 @@ const CATEGORIES = [
   "burger", "pizza", "tacos", "sushi", "salad", "sandwich", "pasta",
   "chicken", "seafood", "breakfast", "dessert", "coffee", "other",
 ];
+const TAGS = ["healthy", "vegetarian", "vegan", "gluten-free", "spicy"];
 const ALLERGENS = ["Peanuts", "Tree nuts", "Shellfish", "Fish", "Milk", "Eggs", "Wheat / gluten", "Soy", "Sesame"];
 
 const PROMPT = `You read restaurant menus. List every dish or drink on this menu.
@@ -35,6 +38,7 @@ For each item return:
 - price: the price exactly as printed, like "$12" or "$12.50"; empty string if no price is printed
 - allergens: only allergens the menu itself prints for this item, from: ${ALLERGENS.join(", ")}
 - ingredientsUnknown: true when the menu doesn't describe the ingredients
+- tags: any of ${TAGS.join(", ")} that clearly apply. Use "healthy" only for clearly lighter items (salads, grilled fish or chicken, grain bowls, vegetable dishes) or items the menu itself marks as healthy or light; use the diet tags only when the menu marks them or the ingredients make it certain
 Do not guess prices or allergens. Skip section headings, taxes, and anything that isn't food or drink.`;
 
 const SCHEMA = {
@@ -50,6 +54,7 @@ const SCHEMA = {
           price: { type: "STRING" },
           allergens: { type: "ARRAY", items: { type: "STRING", enum: ALLERGENS } },
           ingredientsUnknown: { type: "BOOLEAN" },
+          tags: { type: "ARRAY", items: { type: "STRING", enum: TAGS } },
         },
         required: ["name", "categories", "price", "allergens", "ingredientsUnknown"],
       },
@@ -58,7 +63,7 @@ const SCHEMA = {
   required: ["dishes"],
 };
 
-type Draft = { name: string; categories: string[]; price: string; allergens: string[]; ingredientsUnknown: boolean };
+type Draft = { name: string; categories: string[]; price: string; allergens: string[]; ingredientsUnknown: boolean; tags?: string[] };
 
 export const readMenu = onCall(
   { secrets: [GEMINI_API_KEY], region: "us-central1", timeoutSeconds: 60, memory: "512MiB", enforceAppCheck: false },
@@ -113,6 +118,7 @@ export const readMenu = onCall(
         price: (d.price ?? "").trim().slice(0, 20),
         allergens: (d.allergens ?? []).filter((a) => ALLERGENS.includes(a)),
         ingredientsUnknown: !!d.ingredientsUnknown,
+        tags: (d.tags ?? []).filter((t) => TAGS.includes(t)),
       }));
     return { dishes };
   },
@@ -229,4 +235,35 @@ export const cleanupGoogleCoords = onSchedule({ schedule: "every day 04:00", reg
     await batch.commit();
   }
   console.log(`Cleared coordinates for ${stale.size} places`);
+});
+
+/**
+ * Alerts: when the feed gets a new place or new dishes, tell phones that follow that area
+ * (topics near_place_<gh4>, near_menu_<gh4>) or that saved the place (place_<id>).
+ */
+export const notifyOnFeed = onDocumentCreated({ document: "feed/{id}", region: "us-central1" }, async (event) => {
+  const item = event.data?.data();
+  if (!item) return;
+  const type = item.type as string;
+  const gh4 = (item.gh4 as string) || "";
+  const placeName = ((item.placeName as string) || "A place").slice(0, 80);
+  const sends: Promise<unknown>[] = [];
+  const send = (topic: string, title: string, body: string) =>
+    sends.push(
+      getMessaging()
+        .send({ topic, notification: { title, body }, android: { notification: { channelId: "whats_new" } } })
+        .catch((e) => console.error("send failed", topic, e)),
+    );
+  if (type === "place" && /^[0-9a-z]{4}$/.test(gh4)) {
+    send(`near_place_${gh4}`, "New place near you", `${placeName} was just added to Dishcover.`);
+  }
+  if (type === "menu") {
+    const n = (item.dishCount as number) || 1;
+    const names = ((item.dishNames as string[]) || []).slice(0, 3).join(", ");
+    const body = `${n} new ${n === 1 ? "dish" : "dishes"}${names ? ": " + names : ""}`;
+    if (/^[0-9a-z]{4}$/.test(gh4)) send(`near_menu_${gh4}`, `New at ${placeName}`, body);
+    const placeId = (item.placeId as string) || "";
+    if (/^[A-Za-z0-9_-]{1,100}$/.test(placeId)) send(`place_${placeId}`, `New at ${placeName}`, body);
+  }
+  await Promise.all(sends);
 });

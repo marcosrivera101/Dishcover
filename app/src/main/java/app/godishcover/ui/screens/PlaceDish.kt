@@ -18,7 +18,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.ui.platform.LocalContext
+import app.godishcover.data.Place
+import app.godishcover.ui.StarPicker
+import app.godishcover.ui.StarsText
+import app.godishcover.ui.TagKind
+import app.godishcover.ui.timeAgo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,10 +76,44 @@ import java.util.Date
 private fun date(ms: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ms))
 
 @Composable
+private fun ShareToFeed(checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onChange(!checked) }) {
+        Checkbox(checked, onChange, colors = CheckboxDefaults.colors(checkedColor = Dc.Wine))
+        Text("Also share to the feed", style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun ReviewCard(r: Rating, mine: Boolean, reported: Boolean, onReport: () -> Unit, onBlock: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Dc.White).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row {
+            Text(r.userName.ifBlank { "Someone" }, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            StarsText(r.stars)
+        }
+        Note(timeAgo(r.updatedAt))
+        if (r.text.isNotBlank()) Text(r.text, style = MaterialTheme.typography.bodyMedium)
+        if (!mine) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(enabled = !reported, onClick = onReport) { Text(if (reported) "Reported" else "Report", color = Dc.Muted) }
+                TextButton(onClick = onBlock) { Text("Block ${r.userName.substringBefore(' ').ifBlank { "user" }}", color = Dc.Muted) }
+            }
+        }
+    }
+}
+
+@Composable
 fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
+    val ctx = LocalContext.current
     val places by vm.places.collectAsState()
     val dishes by vm.dishes.collectAsState()
     val ratings by vm.myRatings.collectAsState()
+    val placeRatings by vm.myPlaceRatings.collectAsState()
+    val profile by vm.profile.collectAsState()
+    val user by vm.user.collectAsState()
+    val busy by vm.busy.collectAsState()
     val loc by vm.location.collectAsState()
     @Suppress("UNUSED_VARIABLE") val deps = listOf(ratings)
     LaunchedEffect(placeId) { vm.loadPlaceDishes(placeId) }
@@ -77,21 +121,52 @@ fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
     val menu = dishes.filter { it.placeId == placeId }
     var cat by remember { mutableStateOf("") }
     val cats = menu.flatMap { it.categories }.distinct().sortedBy { Categories.ALL.indexOf(it) }
+    val saved = placeId in profile?.savedPlaces.orEmpty()
+    val mine = placeRatings[placeId]
+    var stars by remember(placeId, mine) { mutableIntStateOf(mine?.stars ?: 0) }
+    var text by remember(placeId, mine) { mutableStateOf(mine?.text.orEmpty()) }
+    var share by remember { mutableStateOf(false) }
+    var savedRating by remember(placeId) { mutableStateOf(false) }
+    val reviews = remember(placeId) { mutableStateListOf<Rating>() }
+    val reported = remember(placeId) { mutableStateListOf<String>() }
+    var reloadKey by remember { mutableIntStateOf(0) }
+    LaunchedEffect(placeId, reloadKey) {
+        val list = runCatching { vm.placeReviews(placeId) }.getOrDefault(emptyList())
+        reviews.clear(); reviews.addAll(list)
+    }
 
     Column(Modifier.fillMaxSize()) {
-        TopBar(place?.name ?: "Restaurant", onBack = { nav.popBackStack() })
+        TopBar(place?.name ?: "Restaurant", onBack = { nav.popBackStack() }) {
+            if (place != null) {
+                IconButton(onClick = { vm.toggleSaved(placeId) }) {
+                    Icon(
+                        if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (saved) "Remove from saved" else "Save place",
+                        tint = if (saved) Dc.Wine else Dc.Muted,
+                    )
+                }
+                IconButton(onClick = {
+                    val best = menu.sortedByDescending { it.average }.take(3).joinToString(", ") { it.name }
+                    shareText(ctx, "${place.name}" + (if (best.isNotBlank()) ": try $best." else ".") + "\n\nFound on Dishcover · godishcover.com")
+                }) { Icon(Icons.Filled.Share, contentDescription = "Share", tint = Dc.Muted) }
+            }
+        }
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (place != null) {
-                val dist = loc?.let { Geo.miles(Geo.distanceKm(it, LatLng(place.lat, place.lng))) }
+                val dist = if (loc != null && (place.lat != 0.0 || place.lng != 0.0)) Geo.miles(Geo.distanceKm(loc!!, LatLng(place.lat, place.lng))) else null
                 Note(listOfNotNull(place.address.ifBlank { null }, dist).joinToString(" · "))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (place.ratingCount > 0) Tag("Everyone " + String.format("%.1f", place.average) + " · ${place.ratingCount} ${if (place.ratingCount == 1L) "review" else "reviews"}")
+                    if (saved) Tag("Saved", TagKind.You)
+                }
                 if (place.googlePlaceId != null) GoogleAttribution()
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SecondaryButton("Update menu", onClick = { nav.navigate(Routes.add(placeId)) }, modifier = Modifier.weight(1f))
-                SecondaryButton("Add a dish", onClick = { nav.navigate(Routes.add(placeId)) }, modifier = Modifier.weight(1f))
+                SecondaryButton("Add dishes", onClick = { nav.navigate(Routes.add(placeId)) }, modifier = Modifier.weight(1f))
+                SecondaryButton("Share a bite", onClick = { nav.navigate(Routes.post(placeId)) }, modifier = Modifier.weight(1f))
             }
             val last = menu.maxOfOrNull { it.confirmedAt } ?: 0L
             if (last > 0) Note("Menu last confirmed ${date(last)}")
@@ -109,6 +184,31 @@ fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
                 .sortedByDescending { it.dish.average }
                 .forEach { v -> DishRow(v, showPlace = false) { nav.navigate(Routes.dish(v.dish.id)) } }
             Note("Menu added by people who eat here. Something wrong or no longer served? Open the dish and flag it.")
+
+            if (place != null) {
+                SectionTitle("Rate this place")
+                Note("The whole visit: food, service, the room.")
+                StarPicker(stars, { stars = it; savedRating = false })
+                OutlinedTextField(
+                    text, { text = it.take(500); savedRating = false },
+                    label = { Text("Review (optional)") }, supportingText = { Text("${text.length}/500") },
+                    minLines = 2, modifier = Modifier.fillMaxWidth(),
+                )
+                ShareToFeed(share) { share = it }
+                PrimaryButton(
+                    if (savedRating) "Saved" else if (mine != null) "Update review" else "Save review",
+                    onClick = { vm.ratePlace(place, stars, text, share) { savedRating = true; reloadKey++ } },
+                    enabled = stars > 0 && !savedRating, busy = busy,
+                )
+            }
+            if (reviews.isNotEmpty()) SectionTitle("Reviews of this place")
+            reviews.forEach { r ->
+                ReviewCard(
+                    r, mine = r.userId == user?.id, reported = r.userId in reported,
+                    onReport = { vm.report(r) { reported.add(r.userId) } },
+                    onBlock = { vm.block(r.userId) { reviews.removeAll { it.userId == r.userId } } },
+                )
+            }
             Spacer(Modifier.height(8.dp))
         }
     }
@@ -139,6 +239,8 @@ fun DishScreen(vm: AppViewModel, nav: NavHostController, dishId: String) {
     var stars by remember(dish.id, mine) { mutableIntStateOf(mine?.stars ?: 0) }
     var text by remember(dish.id, mine) { mutableStateOf(mine?.text.orEmpty()) }
     var saved by remember(dish.id) { mutableStateOf(false) }
+    var share by remember { mutableStateOf(false) }
+    val ctx = LocalContext.current
     var flagOpen by remember { mutableStateOf(false) }
     var flagged by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
@@ -160,6 +262,14 @@ fun DishScreen(vm: AppViewModel, nav: NavHostController, dishId: String) {
 
     Column(Modifier.fillMaxSize()) {
         TopBar("Dish", onBack = { nav.popBackStack() }) {
+            IconButton(onClick = {
+                shareText(
+                    ctx,
+                    "${dish.name} at ${dish.placeName}" +
+                        (if (dish.ratingCount > 0) " · ★ " + String.format("%.1f", dish.average) else "") +
+                        "\n\nFound on Dishcover · godishcover.com",
+                )
+            }) { Icon(Icons.Filled.Share, contentDescription = "Share", tint = Dc.Muted) }
             if (isCreator) TextButton(onClick = { editing = true }) { Text("Edit", color = Dc.Wine) }
         }
         Column(
@@ -176,6 +286,7 @@ fun DishScreen(vm: AppViewModel, nav: NavHostController, dishId: String) {
             )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 dish.categories.forEach { Tag(catLabel(it)) }
+                dish.tags.forEach { Tag(catLabel(it), TagKind.Try) }
                 if (dish.ratingCount > 0) Tag("Everyone " + String.format("%.1f", dish.average) + " · ${dish.ratingCount} ratings")
             }
             if (dish.description.isNotBlank()) Text(dish.description, style = MaterialTheme.typography.bodyLarge)
@@ -186,53 +297,28 @@ fun DishScreen(vm: AppViewModel, nav: NavHostController, dishId: String) {
             if (v.allergyHit) Tag("Lists one of your allergies", app.godishcover.ui.TagKind.Low)
 
             SectionTitle("Your rating")
-            Row {
-                (1..5).forEach { n ->
-                    IconButton(onClick = { stars = n; saved = false }) {
-                        Icon(
-                            Icons.Filled.Star, contentDescription = "$n ${if (n == 1) "star" else "stars"}",
-                            tint = if (n <= stars) Dc.Wine else Dc.ChipLine, modifier = Modifier.size(34.dp),
-                        )
-                    }
-                }
-            }
+            StarPicker(stars, { stars = it; saved = false })
             OutlinedTextField(
                 text, { text = it.take(500); saved = false },
                 label = { Text("Review (optional)") },
                 supportingText = { Text("${text.length}/500") },
                 minLines = 3, modifier = Modifier.fillMaxWidth(),
             )
+            ShareToFeed(share) { share = it }
             PrimaryButton(
                 if (saved) "Saved" else if (mine != null) "Update rating" else "Save rating",
-                onClick = { vm.rate(dish, stars, text) { saved = true; reloadKey++ } },
+                onClick = { vm.rate(dish, stars, text, share) { saved = true; reloadKey++ } },
                 enabled = stars > 0 && !saved,
                 busy = busy,
             )
 
             if (reviews.isNotEmpty()) SectionTitle("Reviews")
             reviews.forEach { r ->
-                Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Dc.White).padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Row {
-                        Text(r.userName.ifBlank { "Someone" }, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                        Text("★".repeat(r.stars) + " ${r.stars}/5", style = MaterialTheme.typography.labelMedium, color = Dc.Wine)
-                    }
-                    Note(date(r.updatedAt))
-                    Text(r.text, style = MaterialTheme.typography.bodyMedium)
-                    if (r.userId != user?.id) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            val isReported = r.userId in reported
-                            TextButton(enabled = !isReported, onClick = { vm.report(r) { reported.add(r.userId) } }) {
-                                Text(if (isReported) "Reported" else "Report", color = Dc.Muted)
-                            }
-                            TextButton(onClick = { vm.block(r.userId) { reviews.removeAll { it.userId == r.userId } } }) {
-                                Text("Block ${r.userName.substringBefore(' ').ifBlank { "user" }}", color = Dc.Muted)
-                            }
-                        }
-                    }
-                }
+                ReviewCard(
+                    r, mine = r.userId == user?.id, reported = r.userId in reported,
+                    onReport = { vm.report(r) { reported.add(r.userId) } },
+                    onBlock = { vm.block(r.userId) { reviews.removeAll { it.userId == r.userId } } },
+                )
             }
 
             if (dish.createdByName.isNotBlank() && dish.createdAt > 0) {
@@ -274,6 +360,7 @@ private fun EditDishDialog(dish: Dish, onDismiss: () -> Unit, onSave: (Dish) -> 
     var price by remember { mutableStateOf(dish.price) }
     var desc by remember { mutableStateOf(dish.description) }
     var cats by remember { mutableStateOf(dish.categories.toSet()) }
+    var tags by remember { mutableStateOf(dish.tags.toSet()) }
     var confirmDelete by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -288,6 +375,11 @@ private fun EditDishDialog(dish: Dish, onDismiss: () -> Unit, onSave: (Dish) -> 
                         Chip(catLabel(c), c in cats, onClick = { cats = if (c in cats) cats - c else cats + c })
                     }
                 }
+                ChipFlow {
+                    Categories.TAGS.forEach { t ->
+                        Chip(catLabel(t), t in tags, kind = app.godishcover.ui.ChipKind.Try, onClick = { tags = if (t in tags) tags - t else tags + t })
+                    }
+                }
                 TextButton(onClick = { if (confirmDelete) onDelete() else confirmDelete = true }) {
                     Text(if (confirmDelete) "Tap again to remove this dish" else "Remove dish", color = Dc.Wine)
                 }
@@ -295,7 +387,7 @@ private fun EditDishDialog(dish: Dish, onDismiss: () -> Unit, onSave: (Dish) -> 
         },
         confirmButton = {
             TextButton(enabled = name.isNotBlank(), onClick = {
-                onSave(dish.copy(name = name.trim(), price = price.trim(), description = desc.trim(), categories = cats.toList().ifEmpty { listOf("other") }))
+                onSave(dish.copy(name = name.trim(), price = price.trim(), description = desc.trim(), categories = cats.toList().ifEmpty { listOf("other") }, tags = tags.toList()))
             }) { Text("Save", color = Dc.Wine) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = Dc.Muted) } },

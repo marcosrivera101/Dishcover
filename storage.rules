@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Post photos: anyone signed in can view; only the author uploads (JPEG, about 1 MB) or deletes.
+    match /posts/{uid}/{file} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 1500000
+        && request.resource.contentType.matches('image/jpeg');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    // App builds for the in-app update.
+    match /releases/{file} {
+      allow read: if true;
+    }
+  }
+}
