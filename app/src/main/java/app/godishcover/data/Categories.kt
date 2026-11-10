@@ -15,6 +15,10 @@ object Categories {
         "Pierogi", "Dim sum", "Mofongo", "Omakase", "Bibimbap",
     )
 
+    /** Diet tags a dish can carry. "healthy" powers Healthy picks. */
+    val TAGS = listOf("healthy", "vegetarian", "vegan", "gluten-free", "spicy")
+    const val HEALTHY = "healthy"
+
     fun label(cat: String): String = cat.replaceFirstChar { it.uppercase() }
 
     enum class Meal(val label: String, val greeting: String, val hint: String) {
