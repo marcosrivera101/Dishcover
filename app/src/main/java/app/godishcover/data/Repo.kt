@@ -11,8 +11,11 @@ interface Repo {
     /** Places and dishes around the last loaded location. */
     val places: StateFlow<List<Place>>
     val dishes: StateFlow<List<Dish>>
-    /** The signed-in user's own ratings, by dish id. */
+    /** The signed-in user's own ratings, by dish id and by place id. */
     val myRatings: StateFlow<Map<String, Rating>>
+    val myPlaceRatings: StateFlow<Map<String, Rating>>
+    /** The "what's new" feed loaded so far, newest first. */
+    val feed: StateFlow<List<FeedItem>>
 
     suspend fun signInWithGoogleIdToken(idToken: String)
     suspend fun signInWithEmail(email: String, password: String, create: Boolean)
@@ -23,8 +26,8 @@ interface Repo {
 
     suspend fun saveProfile(profile: Profile)
 
-    /** Loads places and dishes in the cells around [center]. */
-    suspend fun loadNearby(center: LatLng)
+    /** Loads places and dishes within [radiusKm] of [center]. */
+    suspend fun loadNearby(center: LatLng, radiusKm: Double)
 
     /** Saves a place (deduped by Google place id) and returns it with its id. */
     suspend fun upsertPlace(place: Place): Place
@@ -33,12 +36,26 @@ interface Repo {
     suspend fun updateDish(dish: Dish)
     suspend fun deleteDish(dish: Dish)
 
-    suspend fun rate(dish: Dish, stars: Int, text: String)
+    suspend fun rate(dish: Dish, stars: Int, text: String, shareToFeed: Boolean)
     suspend fun reviews(dishId: String): List<Rating>
+    suspend fun ratePlace(place: Place, stars: Int, text: String, shareToFeed: Boolean)
+    suspend fun placeReviews(placeId: String): List<Rating>
     suspend fun flagDish(dish: Dish, reason: String)
     suspend fun reportReview(review: Rating, reason: String)
     suspend fun block(userId: String)
+    suspend fun toggleSaved(placeId: String)
+
+    /** Loads the first page of the feed around [center], or the next page when [more] is true. Returns whether older entries remain. */
+    suspend fun loadFeed(center: LatLng, more: Boolean): Boolean
+    /** Publishes a post or shared review; [photoJpeg] is uploaded first when given. */
+    suspend fun post(item: FeedItem, photoJpeg: ByteArray?)
+    suspend fun toggleLike(item: FeedItem)
+    suspend fun deleteFeedItem(item: FeedItem)
+    suspend fun reportFeedItem(item: FeedItem, reason: String)
 
     /** Sends a menu photo (JPEG) or a link to the menu reader and returns draft dishes. */
     suspend fun readMenu(imageJpeg: ByteArray?, url: String?): List<DraftDish>
+
+    /** The newest published build, or null when unknown. */
+    suspend fun latestRelease(): Release?
 }

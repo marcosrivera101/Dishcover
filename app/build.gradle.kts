@@ -31,8 +31,8 @@ android {
         applicationId = "app.godishcover"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsKey\"")
         buildConfigField("boolean", "HAS_FIREBASE", hasFirebase.toString())
     }
@@ -89,6 +89,11 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-functions")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Loads post photos
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Sign in with Google through Credential Manager
     implementation("androidx.credentials:credentials:1.3.0")

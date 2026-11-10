@@ -17,7 +17,15 @@ data class PlaceSuggestion(val place: Place?, val placeName: String, val distanc
  * want-to-try dishes move up.
  */
 object Suggest {
-    const val MAX_KM = 25.0
+    /** Updated from Settings: how far "nearby" reaches. */
+    @Volatile var MAX_KM = 16.1
+
+    fun isHealthy(d: Dish) = Categories.HEALTHY in d.tags
+
+    /** Rated in the last two weeks, busiest first. */
+    fun trending(views: List<DishView>, now: Long = System.currentTimeMillis()): List<DishView> =
+        views.filter { it.dish.ratingCount > 0 && now - it.dish.lastRatedAt < 14L * 24 * 60 * 60 * 1000 }
+            .sortedByDescending { it.dish.ratingCount * it.dish.average }
 
     fun view(dish: Dish, place: Place?, me: LatLng?, profile: Profile?, mine: Map<String, Rating>): DishView {
         val dist = if (me != null && place != null && (place.lat != 0.0 || place.lng != 0.0))
