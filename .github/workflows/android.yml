@@ -10,9 +10,6 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
-    outputs:
-      version_name: ${{ steps.version.outputs.name }}
-      version_code: ${{ steps.version.outputs.code }}
     steps:
       - uses: actions/checkout@v4
 
@@ -45,12 +42,6 @@ jobs:
       - name: Name the APK
         run: cp app/build/outputs/apk/debug/app-debug.apk "dishcover-${{ steps.version.outputs.name }}.apk"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dishcover-apk
-          path: dishcover-*.apk
-          if-no-files-found: error
-
       # A "Test build" release with the APK attached, so it can be downloaded straight to a phone.
       - name: Publish test build
         env:
@@ -61,6 +52,24 @@ jobs:
           gh release create "$TAG" dishcover-*.apk --prerelease --target "$GITHUB_SHA" \
             --title "Test build ${{ steps.version.outputs.name }} (${GITHUB_REF_NAME})" \
             --notes "Install: open this page on your Android phone, tap the .apk file, then open it and allow the install. Built from ${GITHUB_SHA::7}."
+
+      # Goes live on main once the FIREBASE_SERVICE_ACCOUNT secret exists: publishes the database
+      # and storage rules, then offers the new build to phones through the in-app update.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Publish rules and the new build
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        if: github.ref == 'refs/heads/main' && env.FIREBASE_SERVICE_ACCOUNT != ''
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          (cd functions && npm ci)
+          npx --yes firebase-tools@13 deploy --only firestore,storage --project godishcover --non-interactive
+          (cd functions && node scripts/publish-release.js "../dishcover-${{ steps.version.outputs.name }}.apk" \
+            "${{ steps.version.outputs.code }}" "${{ steps.version.outputs.name }}")
+          rm -f "$RUNNER_TEMP/sa.json"
 
   functions:
     runs-on: ubuntu-latest
@@ -74,33 +83,3 @@ jobs:
           node-version: "20"
       - run: npm ci
       - run: npm run build
-
-  # Goes live on main once the FIREBASE_SERVICE_ACCOUNT secret exists: publishes the database
-  # and storage rules, then offers the new build to phones through the in-app update.
-  publish:
-    needs: [apk, functions]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-    steps:
-      - uses: actions/checkout@v4
-        if: env.FIREBASE_SERVICE_ACCOUNT != ''
-      - uses: actions/setup-node@v4
-        if: env.FIREBASE_SERVICE_ACCOUNT != ''
-        with:
-          node-version: "20"
-      - uses: actions/download-artifact@v4
-        if: env.FIREBASE_SERVICE_ACCOUNT != ''
-        with:
-          name: dishcover-apk
-      - name: Publish rules and the new build
-        if: env.FIREBASE_SERVICE_ACCOUNT != ''
-        run: |
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
-          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
-          (cd functions && npm ci)
-          npx --yes firebase-tools@13 deploy --only firestore,storage --project godishcover --non-interactive
-          (cd functions && node scripts/publish-release.js "../dishcover-${{ needs.apk.outputs.version_name }}.apk" \
-            "${{ needs.apk.outputs.version_code }}" "${{ needs.apk.outputs.version_name }}")
-          rm -f "$RUNNER_TEMP/sa.json"
