@@ -126,6 +126,6 @@ jobs:
         run: |
           TAG=test-builds
           (cd shots 2>/dev/null && zip -q ../screens.zip *.png) || true
-          gh release upload "$TAG" walkthrough.txt crash.txt screens.zip --clobber || gh release upload "$TAG" walkthrough.txt crash.txt --clobber || true
+          for f in screens.zip walkthrough.txt crash.txt; do [ -s "$f" ] && gh release upload "$TAG" "$f" --clobber || true; done
           cat walkthrough.txt || true
           grep -q "OK (1 test)" walkthrough.txt
