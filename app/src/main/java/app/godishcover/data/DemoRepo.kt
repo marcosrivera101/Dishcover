@@ -54,7 +54,13 @@ class DemoRepo(private val context: Context? = null) : Repo {
     override suspend fun loadNearby(center: LatLng, radiusKm: Double) {
         if (seeded) return
         seeded = true
-        val real = withContext(Dispatchers.IO) { loadAssetSeed() }
+        val real = try {
+            withContext(Dispatchers.IO) { loadAssetSeed() }
+        } catch (e: Throwable) {
+            android.util.Log.e("DishcoverSeed", "Could not load the Hartford seed", e)
+            false
+        }
+        android.util.Log.i("DishcoverSeed", "seed loaded=$real places=${places.value.size} dishes=${dishes.value.size}")
         if (!real) seed(center)
     }
 
