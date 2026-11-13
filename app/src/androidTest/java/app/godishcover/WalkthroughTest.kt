@@ -110,7 +110,7 @@ class WalkthroughTest {
         shot("today")
         tapExact("More…")
         tapExact("Burger")
-        tap("Show me places for")
+        tap("Show me places for", scroll = true)
         waitFor("best first")
         shot("suggestions")
         rule.onAllNodesWithTag("suggestion").onFirst().performClick()
