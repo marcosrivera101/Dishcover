@@ -1,0 +1,4 @@
+node_modules/
+*.json.tmp
+previous.json
+sa.json

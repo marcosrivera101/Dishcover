@@ -1,0 +1,10 @@
+{
+  "name": "dishcover-menus",
+  "private": true,
+  "type": "module",
+  "description": "Finds restaurants and reads their menus from their own websites, for seeding Dishcover and the daily menu check.",
+  "dependencies": {
+    "firebase-admin": "12.7.0",
+    "playwright": "1.49.1"
+  }
+}

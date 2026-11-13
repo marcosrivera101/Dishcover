@@ -1,5 +1,7 @@
 package app.godishcover.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -70,8 +72,8 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
     val loc by vm.location.collectAsState()
     val real by vm.usingRealLocation.collectAsState()
     val meal = remember { AppViewModel.mealNow }
-    val moods = remember(meal) { Categories.moodsFor(meal) }
     var mood by rememberSaveable { mutableStateOf(Categories.defaultMood(meal)) }
+    var moreMoods by rememberSaveable { mutableStateOf(false) }
     val name = profile?.publicName.orEmpty().substringBefore(' ')
     val placesNow by vm.places.collectAsState()
     val settings by vm.settings.collectAsState()
@@ -98,10 +100,24 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
         ) {
             Text("${meal.label} time", style = MaterialTheme.typography.labelLarge, color = Dc.Wine)
             Text("What are you in the mood for?", style = MaterialTheme.typography.headlineSmall)
-            Note("Your favorites first, then ${meal.hint}.")
+            Note("Your favorites first, then ${meal.hint}. Tap More for every kind of food.")
+            val likes = profile?.likes.orEmpty().filter { it in Categories.ALL }
+            val quick = (likes.take(4) + Categories.moodsFor(meal)).distinct()
             ChipFlow {
-                moods.forEach { m ->
+                quick.forEach { m ->
                     Chip(if (m.isEmpty()) "Surprise me" else catLabel(m), on = m == mood, onClick = { mood = m })
+                }
+                if (!moreMoods && mood.isNotEmpty() && mood !in quick) Chip(catLabel(mood), on = true, onClick = {})
+                Chip(if (moreMoods) "Fewer" else "More…", on = false, onClick = { moreMoods = !moreMoods })
+            }
+            AnimatedVisibility(moreMoods) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Categories.GROUPS.forEach { (title, cats) ->
+                        Text(title, style = MaterialTheme.typography.labelLarge, color = Dc.Muted)
+                        ChipFlow {
+                            cats.filter { it !in quick }.forEach { m -> Chip(catLabel(m), on = m == mood, onClick = { mood = m }) }
+                        }
+                    }
                 }
             }
             PrimaryButton(

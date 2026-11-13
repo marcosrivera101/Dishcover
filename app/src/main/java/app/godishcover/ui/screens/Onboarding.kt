@@ -183,7 +183,7 @@ fun AccountScreen(vm: AppViewModel, profile: Profile) {
     }
 }
 
-private data class Step(val key: String, val kind: ChipKind, val title: String, val sub: String, val opts: List<String>, val labels: (String) -> String)
+private data class Step(val key: String, val kind: ChipKind, val title: String, val sub: String, val opts: List<String>, val labels: (String) -> String, val grouped: Boolean = false)
 
 @Composable
 fun InterviewScreen(vm: AppViewModel, profile: Profile, onDone: () -> Unit) {
@@ -191,9 +191,9 @@ fun InterviewScreen(vm: AppViewModel, profile: Profile, onDone: () -> Unit) {
     val steps = remember {
         listOf(
             Step("likes", ChipKind.Normal, "What do you love to eat?",
-                "Pick every kind of food you get excited about. These shape what we suggest first.", Categories.INTERVIEW, ::catLabel),
+                "Pick every kind of food you get excited about. These shape what we suggest first.", Categories.INTERVIEW, ::catLabel, grouped = true),
             Step("dislikes", ChipKind.Bad, "Anything you would rather skip?",
-                "These move to the bottom of your results. You can still find them if you search.", Categories.INTERVIEW, ::catLabel),
+                "These move to the bottom of your results. You can still find them if you search.", Categories.INTERVIEW, ::catLabel, grouped = true),
             Step("allergies", ChipKind.Bad, "Any food allergies?",
                 "We use these to push dishes lower when a menu lists the ingredient.", Categories.ALLERGIES, { it }),
             Step("want", ChipKind.Try, "What have you never tried but want to?",
@@ -242,23 +242,27 @@ fun InterviewScreen(vm: AppViewModel, profile: Profile, onDone: () -> Unit) {
         Text(s.title, style = MaterialTheme.typography.headlineMedium)
         Text(s.sub, style = MaterialTheme.typography.bodyLarge, color = Dc.Muted)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            ChipFlow {
-                opts.forEach { o ->
-                    val on = o in picked
-                    Chip(s.labels(o), on, kind = s.kind, onClick = {
-                        picks = picks + (s.key to if (on) picked - o else picked + o)
-                    })
+            val sections = if (s.grouped) Categories.GROUPS else listOf("" to opts)
+            sections.forEach { (title, list) ->
+                if (title.isNotEmpty()) Text(title, style = MaterialTheme.typography.labelLarge, color = Dc.Muted)
+                ChipFlow {
+                    list.forEach { o ->
+                        val on = o in picked
+                        Chip(s.labels(o), on, kind = s.kind, onClick = {
+                            picks = picks + (s.key to if (on) picked - o else picked + o)
+                        })
+                    }
                 }
             }
             if (s.key == "allergies") {
                 Note("Dishes whose menu lists these move lower in your results, they are not hidden. Menus are often incomplete, so always check allergies with the restaurant.")
             }
-            if (s.key == "want") {
+            if (!s.grouped) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(extra, { extra = it.take(40) }, label = { Text("Something else?") }, singleLine = true, modifier = Modifier.weight(1f))
                     SecondaryButton("Add", onClick = {
                         val e = extra.trim()
-                        if (e.isNotEmpty()) { picks = picks + ("want" to picked + e); extra = "" }
+                        if (e.isNotEmpty()) { picks = picks + (s.key to picked + e); extra = "" }
                     })
                 }
             }
