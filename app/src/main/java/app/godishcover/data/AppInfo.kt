@@ -16,6 +16,16 @@ data class ChangeEntry(val versionCode: Int, val version: String, val date: Stri
 object Changelog {
     val ALL = listOf(
         ChangeEntry(
+            3, "0.3.0", "November 2026",
+            listOf(
+                "Real Hartford restaurants and their menus, read from each restaurant's own website.",
+                "A daily menu check: when a restaurant adds dishes, they show up under New on menus in the feed.",
+                "54 kinds of food to pick from, grouped into dishes, cuisines, and sweets and drinks.",
+                "Many more allergies and want-to-try dishes, and you can type your own on any list.",
+                "More moods to choose from, with a More button for every kind of food.",
+            ),
+        ),
+        ChangeEntry(
             2, "0.2.0", "November 2026",
             listOf(
                 "New Feed tab: what's new on menus near you, new places, shared reviews, posts, trending dishes and restaurant news.",

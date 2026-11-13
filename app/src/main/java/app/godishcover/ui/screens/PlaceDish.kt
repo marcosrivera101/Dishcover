@@ -291,7 +291,7 @@ fun DishScreen(vm: AppViewModel, nav: NavHostController, dishId: String) {
             }
             if (dish.description.isNotBlank()) Text(dish.description, style = MaterialTheme.typography.bodyLarge)
             Note(
-                (if (dish.allergens.isNotEmpty()) "Menu lists: " + dish.allergens.joinToString(", ") { it.lowercase() } + ". " else "") +
+                (if (dish.allergens.isNotEmpty()) "May contain: " + dish.allergens.joinToString(", ") { it.lowercase() } + ". " else "") +
                     "Always check allergies with the restaurant.",
             )
             if (v.allergyHit) Tag("Lists one of your allergies", app.godishcover.ui.TagKind.Low)

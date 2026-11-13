@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -100,14 +102,18 @@ class WalkthroughTest {
 
         waitFor("What are you in the mood for?")
         shot("today")
+        tapExact("More…")
         tapExact("Burger")
         tap("Show me places for")
         waitFor("best first")
         shot("suggestions")
-        tap("(sample)")
+        rule.onAllNodesWithTag("suggestion").onFirst().performClick()
+        rule.waitForIdle()
         waitFor("Rate this place")
         shot("restaurant")
-        tap("Smash Double")
+        rule.waitUntilAtLeastOneExists(hasTestTag("dish"), 15_000)
+        rule.onAllNodesWithTag("dish").onFirst().performClick()
+        rule.waitForIdle()
         waitFor("Your rating")
         shot("dish")
         tapDesc("4 stars")

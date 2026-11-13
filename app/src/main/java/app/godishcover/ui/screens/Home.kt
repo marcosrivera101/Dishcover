@@ -1,6 +1,7 @@
 package app.godishcover.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.platform.testTag
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -212,7 +213,7 @@ fun SuggestionsScreen(vm: AppViewModel, nav: NavHostController, category: String
             } else {
                 Note("${list.size} ${if (list.size == 1) "place" else "places"} near you, best first: your stars, then everyone's, then distance.")
                 list.forEachIndexed { i, s ->
-                    Card(onClick = { s.place?.let { nav.navigate(Routes.place(it.id)) } }) {
+                    Card(Modifier.testTag("suggestion"), onClick = { s.place?.let { nav.navigate(Routes.place(it.id)) } }) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(

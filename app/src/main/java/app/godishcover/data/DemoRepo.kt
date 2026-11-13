@@ -1,6 +1,11 @@
 package app.godishcover.data
 
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
@@ -9,7 +14,7 @@ import java.util.UUID
  * Runs the whole app on the phone with made-up sample places, so it can be tried
  * before the Firebase project exists. Nothing leaves the phone and nothing is kept after closing.
  */
-class DemoRepo : Repo {
+class DemoRepo(private val context: Context? = null) : Repo {
     override val isDemo = true
     override val user = MutableStateFlow<User?>(null)
     override val profile = MutableStateFlow<Profile?>(null)
@@ -49,7 +54,8 @@ class DemoRepo : Repo {
     override suspend fun loadNearby(center: LatLng, radiusKm: Double) {
         if (seeded) return
         seeded = true
-        seed(center)
+        val real = withContext(Dispatchers.IO) { loadAssetSeed() }
+        if (!real) seed(center)
     }
 
     override suspend fun upsertPlace(place: Place): Place {
@@ -207,6 +213,62 @@ class DemoRepo : Repo {
             DraftDish("Elote", "$6", setOf("other"), allergens = listOf("Milk"), note = "Menu lists: milk"),
             DraftDish("Churros", "", setOf("dessert"), note = "Price not printed"),
         )
+    }
+
+    /**
+     * Loads the real Hartford places and menus the menu check collected (assets/seed/hartford.json).
+     * No ratings or reviews are made up for real restaurants; only the menu check's own posts are shown.
+     */
+    private fun loadAssetSeed(): Boolean {
+        val json = try {
+            context?.assets?.open("seed/hartford.json")?.bufferedReader()?.use { it.readText() }
+        } catch (e: Exception) { null } ?: return false
+        val root = JSONObject(json)
+        fun JSONArray.strings() = (0 until length()).map { getString(it) }
+        val ps = mutableListOf<Place>()
+        val pa = root.getJSONArray("places")
+        for (i in 0 until pa.length()) {
+            val o = pa.getJSONObject(i)
+            val lat = o.getDouble("lat"); val lng = o.getDouble("lng")
+            ps += Place(
+                id = o.getString("id"), name = o.getString("name"), address = o.optString("address"),
+                lat = lat, lng = lng, gh4 = Geo.geohash(lat, lng), createdBy = "dishcover-menu-check",
+                createdByName = "Dishcover", cuisine = o.optString("cuisine"), website = o.optString("website"),
+            )
+        }
+        val byId = ps.associateBy { it.id }
+        val now = System.currentTimeMillis()
+        val ds = mutableListOf<Dish>()
+        val da = root.getJSONArray("dishes")
+        for (i in 0 until da.length()) {
+            val o = da.getJSONObject(i)
+            val p = byId[o.getString("placeId")] ?: continue
+            ds += Dish(
+                id = o.getString("id"), placeId = p.id, placeName = p.name, gh4 = p.gh4, name = o.getString("name"),
+                description = o.optString("description"), categories = o.getJSONArray("categories").strings(),
+                price = o.optString("price"), allergens = o.optJSONArray("allergens")?.strings().orEmpty(),
+                tags = o.optJSONArray("tags")?.strings().orEmpty(), createdBy = "dishcover-menu-check",
+                createdByName = "Dishcover", confirmedAt = now,
+            )
+        }
+        if (ps.isEmpty()) return false
+        places.value = ps
+        dishes.value = ds
+        // The menu check's posts: one per place with a menu, spread over the last few days.
+        val hour = 60 * 60 * 1000L
+        val counts = ds.groupBy { it.placeId }
+        val all = ps.filter { counts.containsKey(it.id) }.mapIndexed { i, p ->
+            val menu = counts.getValue(p.id)
+            FeedItem(
+                id = "menu-check-${p.id}", type = FeedType.MENU, gh3 = p.gh4.take(3), gh4 = p.gh4, lat = p.lat, lng = p.lng,
+                createdAt = now - (1 + i * 3L) * hour, userId = "dishcover-menu-check", userName = "Dishcover menu check",
+                placeId = p.id, placeName = p.name, dishNames = menu.take(4).map { it.name }, dishCount = menu.size,
+                dishId = menu.first().id,
+            )
+        }
+        feed.value = all.take(20)
+        olderFeed = all.drop(20)
+        return true
     }
 
     private fun seed(c: LatLng) {

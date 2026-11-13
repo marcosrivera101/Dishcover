@@ -19,6 +19,9 @@ data class Place(
     var createdAt: Long = 0,
     var ratingSum: Long = 0,
     var ratingCount: Long = 0,
+    /** OpenStreetMap-style cuisine list, e.g. "pizza;italian". Set by the menu check. */
+    var cuisine: String = "",
+    var website: String = "",
 )
 
 val Place.average: Double get() = if (ratingCount == 0L) 0.0 else ratingSum.toDouble() / ratingCount

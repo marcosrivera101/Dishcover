@@ -25,11 +25,10 @@ const MAX_IMAGE_BYTES = 1_100_000;
 const MAX_PAGE_BYTES = 1_000_000;
 
 const CATEGORIES = [
-  "burger", "pizza", "tacos", "sushi", "salad", "sandwich", "pasta",
-  "chicken", "seafood", "breakfast", "dessert", "coffee", "other",
+  "burger", "pizza", "tacos", "burrito", "sandwich", "wings", "chicken", "bbq", "steak", "seafood", "sushi", "ramen", "noodles", "pho", "dumplings", "rice bowl", "salad", "soup", "pasta", "hot dogs", "breakfast", "bagels", "fries and sides", "american", "italian", "mexican", "chinese", "japanese", "korean", "thai", "vietnamese", "indian", "mediterranean", "middle eastern", "greek", "caribbean", "jamaican", "puerto rican", "latin", "soul food", "cajun", "african", "brazilian", "peruvian", "french", "halal", "vegan", "dessert", "bakery", "donuts", "ice cream", "coffee", "bubble tea", "smoothies and juice", "other",
 ];
 const TAGS = ["healthy", "vegetarian", "vegan", "gluten-free", "spicy"];
-const ALLERGENS = ["Peanuts", "Tree nuts", "Shellfish", "Fish", "Milk", "Eggs", "Wheat / gluten", "Soy", "Sesame"];
+const ALLERGENS = ["Peanuts", "Tree nuts", "Shellfish", "Fish", "Milk", "Eggs", "Wheat / gluten", "Soy", "Sesame", "Mustard", "Corn", "Coconut", "Celery", "Sulfites", "Lupin", "Mollusks", "Red meat", "Pork", "Nightshades", "Garlic", "Onion", "Strawberries", "Avocado", "Kiwi", "Mushrooms", "Chocolate"];
 
 const PROMPT = `You read restaurant menus. List every dish or drink on this menu.
 For each item return:

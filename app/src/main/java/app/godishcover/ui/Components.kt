@@ -1,5 +1,7 @@
 package app.godishcover.ui
 
+import androidx.compose.ui.platform.testTag
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -223,7 +225,7 @@ fun Thumb(text: String, size: Int = 52, round: Boolean = false) {
 
 @Composable
 fun DishRow(v: DishView, showPlace: Boolean = true, onClick: () -> Unit) {
-    Card(onClick = onClick) {
+    Card(Modifier.testTag("dish"), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Thumb(v.dish.name)
             Spacer(Modifier.width(12.dp))
@@ -320,7 +322,7 @@ fun GoogleAttribution() {
 @Composable
 fun DemoBanner() {
     Text(
-        "Demo mode: sample places, nothing is saved.",
+        "Test mode: real Hartford menus, nothing you do is saved.",
         style = MaterialTheme.typography.labelMedium,
         color = Dc.AmberInk,
         textAlign = TextAlign.Center,
