@@ -122,7 +122,7 @@ jobs:
             adb shell am instrument -w app.godishcover.test/androidx.test.runner.AndroidJUnitRunner | tee walkthrough.txt || true
             adb exec-out run-as app.godishcover tar c -C files shots > shots.tar || true
             tar xf shots.tar || true
-            adb logcat -d | grep -E "DishcoverSeed|ANR|Skipped [0-9]+ frames|OutOfMemory|FATAL|AndroidRuntime|Davey|app.godishcover" | tail -300 > crash.txt || true
+            adb logcat -d | grep -E "DishcoverSeed|ANR in|OutOfMemory|FATAL EXCEPTION|AndroidRuntime" | grep -v AppsFilter | tail -120 > crash.txt || true
       - name: Attach screenshots
         if: always()
         env:
