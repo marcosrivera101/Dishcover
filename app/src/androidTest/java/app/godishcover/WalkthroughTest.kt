@@ -44,8 +44,14 @@ class WalkthroughTest {
         File(dir, "%02d-%s.png".format(n, name)).outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    private fun waitFor(text: String, timeout: Long = 15_000) =
-        rule.waitUntilAtLeastOneExists(hasText(text, substring = true), timeout)
+    private fun waitFor(text: String, timeout: Long = 15_000) {
+        try {
+            rule.waitUntilAtLeastOneExists(hasText(text, substring = true), timeout)
+        } catch (e: Throwable) {
+            shot("timeout-" + text.take(12).replace(Regex("[^A-Za-z0-9]"), "-"))
+            throw e
+        }
+    }
 
     private fun tap(text: String, scroll: Boolean = false) {
         waitFor(text)

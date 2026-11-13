@@ -100,7 +100,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val pendingPlace = MutableStateFlow<Place?>(null)
 
     /** Screens collect the flows above to recompose; these helpers read their current values. */
-    fun placeMap(): Map<String, Place> = places.value.associateBy { it.id }
+    private var placeMapFor: List<Place>? = null
+    private var placeMapCache: Map<String, Place> = emptyMap()
+
+    /** Built once per places list: ranking calls this for every dish, so it must be cheap. */
+    fun placeMap(): Map<String, Place> {
+        val list = places.value
+        if (placeMapFor !== list) {
+            placeMapCache = list.associateBy { it.id }
+            placeMapFor = list
+        }
+        return placeMapCache
+    }
 
     fun hasLocationPermission(): Boolean {
         val ctx = getApplication<Application>()
