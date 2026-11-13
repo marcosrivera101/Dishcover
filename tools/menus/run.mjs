@@ -8,7 +8,7 @@
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-import { parseMenuText } from "./parse.mjs";
+import { parseMenuText, cleanItem } from "./parse.mjs";
 import { categorize, tagsFor, allergensFor } from "./taxonomy.mjs";
 
 const args = Object.fromEntries(
@@ -241,6 +241,7 @@ async function main() {
         }
         p.menuSource = items.length ? sources.find((s) => /menu/i.test(s)) ?? sources[0] : "";
       }
+      items = items.map(cleanItem).filter(Boolean);
       for (const it of items.slice(0, 200)) {
         dishes.push({
           id: `${p.id}-${slug(it.name)}`,

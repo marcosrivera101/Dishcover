@@ -91,3 +91,18 @@ export function parseMenuText(text) {
   });
   return out.length >= 5 ? out.slice(0, 200) : [];
 }
+
+/** Final check on one item, whether it came from the text parser or Gemini. Returns null for junk. */
+export function cleanItem(it) {
+  let name = (it.name ?? "").replace(/\s+/g, " ").trim();
+  if (!name) return null;
+  if (/[$|]/.test(name)) return null; // price or column debris
+  if (/^[a-z]/.test(name) && !/^(e|i)[A-Z]/.test(name)) return null; // a sentence fragment
+  if ((name.match(/,/g) ?? []).length >= 3) return null; // ingredient list, not a dish name
+  if (/\b(total|minimum|tax|gratuity|served with|choice of|please|ask your|available|consuming|upgrade)\b/i.test(name)) return null;
+  if (/^(cup|bowl|small|medium|large|regular|classic|premium|garden|half|full|single|double|add)\b[^a-z]*$/i.test(name)) return null; // a size or option, not a dish
+  if (/\b(vodka|tequila|whiskey|bourbon|gin|rum|scotch|brandy|liqueur|vermouth|bitters|kahlua|cr[eè]me de)\b/i.test(name) && name.includes(",")) return null;
+  if (name.length > 70) return null;
+  const price = (it.price ?? "").trim();
+  return { ...it, name, price: /^\$\d/.test(price) ? price : "" };
+}
