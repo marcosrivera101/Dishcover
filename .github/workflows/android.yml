@@ -57,7 +57,7 @@ jobs:
       # and storage rules, then offers the new build to phones through the in-app update.
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       # Needs the Blaze plan and the Owner role on the Firebase service account. Until then it
       # fails without stopping the release below.
       - name: Deploy server code and storage rules
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm ci
       - run: npm run build
 
