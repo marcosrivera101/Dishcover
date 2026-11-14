@@ -58,6 +58,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      # Needs the Blaze plan and the Owner role on the Firebase service account. Until then it
+      # fails without stopping the release below.
+      - name: Deploy server code and storage rules
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && env.FIREBASE_SERVICE_ACCOUNT != ''
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          (cd functions && npm ci)
+          FB="npx --yes firebase-tools@13 --project godishcover --non-interactive"
+          if [ -n "$GEMINI_API_KEY" ]; then printf '%s' "$GEMINI_API_KEY" | $FB functions:secrets:set GEMINI_API_KEY --data-file=- --force; fi
+          $FB deploy --only functions,storage,firestore:indexes --force
+          rm -f "$RUNNER_TEMP/sa.json"
       - name: Publish rules and the new build
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
