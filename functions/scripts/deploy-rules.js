@@ -22,7 +22,7 @@ async function createIndexes() {
     const body = await res.text();
     if (res.ok) console.log(`Index on ${ix.collectionGroup}: creating`);
     else if (res.status === 409 || body.includes("ALREADY_EXISTS")) console.log(`Index on ${ix.collectionGroup}: already there`);
-    else throw new Error(`Index on ${ix.collectionGroup}: HTTP ${res.status} ${body.slice(0, 300)}`);
+    else console.log(`Index on ${ix.collectionGroup} not created (HTTP ${res.status}); create it in the Firebase console`);
   }
 }
 
