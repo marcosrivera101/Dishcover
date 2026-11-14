@@ -61,6 +61,7 @@ jobs:
       - name: Publish rules and the new build
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          APK_URL: https://github.com/${{ github.repository }}/releases/download/test-builds/dishcover.apk
         if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && env.FIREBASE_SERVICE_ACCOUNT != ''
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"

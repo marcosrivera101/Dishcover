@@ -9,12 +9,17 @@ const bucketName = process.env.STORAGE_BUCKET || "godishcover.firebasestorage.ap
 
 async function main() {
   admin.initializeApp({ storageBucket: bucketName });
-  const dest = `releases/dishcover-${versionCode}.apk`;
-  await admin.storage().bucket().upload(apkPath, {
-    destination: dest,
-    metadata: { contentType: "application/vnd.android.package-archive" },
-  });
-  const apkUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(dest)}?alt=media`;
+  // APK_URL points at a copy hosted elsewhere (the GitHub test-builds release); otherwise
+  // the APK goes to Firebase Storage.
+  let apkUrl = process.env.APK_URL;
+  if (!apkUrl) {
+    const dest = `releases/dishcover-${versionCode}.apk`;
+    await admin.storage().bucket().upload(apkPath, {
+      destination: dest,
+      metadata: { contentType: "application/vnd.android.package-archive" },
+    });
+    apkUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(dest)}?alt=media`;
+  }
   await admin.firestore().doc("config/app").set({
     versionCode: Number(versionCode),
     versionName,

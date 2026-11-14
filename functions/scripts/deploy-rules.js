@@ -31,8 +31,13 @@ async function main() {
   const rules = admin.securityRules();
   await rules.releaseFirestoreRulesetFromSource(fs.readFileSync(path.join(root, "firestore.rules"), "utf8"));
   console.log("Firestore rules published");
-  await rules.releaseStorageRulesetFromSource(fs.readFileSync(path.join(root, "storage.rules"), "utf8"), bucket);
-  console.log("Storage rules published");
+  try {
+    await rules.releaseStorageRulesetFromSource(fs.readFileSync(path.join(root, "storage.rules"), "utf8"), bucket);
+    console.log("Storage rules published");
+  } catch (e) {
+    // Storage needs the Blaze plan on new projects; photo uploads stay off until it is turned on.
+    console.log(`Storage rules skipped: ${e.message}`);
+  }
   await createIndexes();
 }
 
