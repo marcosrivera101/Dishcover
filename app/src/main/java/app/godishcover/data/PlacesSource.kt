@@ -3,6 +3,8 @@ package app.godishcover.data
 import android.content.Context
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.CircularBounds
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FetchResolvedPhotoUriRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.api.net.SearchByTextRequest
 import com.google.android.libraries.places.api.net.SearchNearbyRequest
@@ -59,4 +61,31 @@ class PlacesSource(context: Context, apiKey: String) {
             googlePlaceId = pid,
         )
     }
+
+    /**
+     * A small Google photo of the place. Finding the ID and the photo list are the free
+     * "IDs only" calls; only the photo itself is billed, so results are kept for the session.
+     */
+    suspend fun photoUri(p: Place, maxPx: Int = 240): String? {
+        val c = client ?: return null
+        val key = p.googlePlaceId ?: (p.name + "@" + p.lat + "," + p.lng)
+        photoCache[key]?.let { return it.ifEmpty { null } }
+        val uri = runCatching {
+            val id = p.googlePlaceId ?: run {
+                val req = SearchByTextRequest.builder(p.name, listOf(GPlace.Field.ID))
+                    .setMaxResultCount(1)
+                    .setLocationBias(CircularBounds.newInstance(GLatLng(p.lat, p.lng), 300.0))
+                    .build()
+                c.searchByText(req).await().places.firstOrNull()?.id
+            } ?: return@runCatching null
+            val meta = c.fetchPlace(FetchPlaceRequest.newInstance(id, listOf(GPlace.Field.PHOTO_METADATAS))).await()
+                .place.photoMetadatas?.firstOrNull() ?: return@runCatching null
+            c.fetchResolvedPhotoUri(FetchResolvedPhotoUriRequest.builder(meta).setMaxWidth(maxPx).setMaxHeight(maxPx).build())
+                .await().uri?.toString()
+        }.getOrNull()
+        photoCache[key] = uri ?: ""
+        return uri
+    }
+
+    private val photoCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 }

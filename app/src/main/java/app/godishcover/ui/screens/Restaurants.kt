@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import app.godishcover.data.Categories
+import app.godishcover.data.FoodArt
 import app.godishcover.data.Geo
 import app.godishcover.data.LatLng
 import app.godishcover.data.Place
@@ -43,6 +44,7 @@ import app.godishcover.ui.Chip
 import app.godishcover.ui.Dc
 import app.godishcover.ui.EmptyState
 import app.godishcover.ui.Routes
+import app.godishcover.ui.PlacePic
 import app.godishcover.ui.Thumb
 import app.godishcover.ui.catLabel
 
@@ -113,6 +115,7 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
             items(shown, key = { it.id }) { p ->
                 RestaurantRow(
                     p, dist(p), rating(p), byPlace[p.id]?.size ?: 0, p.id in saved,
+                    FoodArt.forPlace(p.cuisine, byPlace[p.id].orEmpty().flatMap { it.categories }),
                     onSave = { vm.toggleSaved(p.id) },
                 ) { nav.navigate(Routes.place(p.id)) }
             }
@@ -128,10 +131,10 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
 }
 
 @Composable
-private fun RestaurantRow(p: Place, km: Double?, stars: Double, dishCount: Int, saved: Boolean, onSave: () -> Unit, onClick: () -> Unit) {
+private fun RestaurantRow(p: Place, km: Double?, stars: Double, dishCount: Int, saved: Boolean, art: String, onSave: () -> Unit, onClick: () -> Unit) {
     Card(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Thumb(p.name, 44)
+            PlacePic(p, 44, emoji = art)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(p.name, style = MaterialTheme.typography.titleMedium)

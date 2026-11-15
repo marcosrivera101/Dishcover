@@ -1,5 +1,6 @@
 package app.godishcover.ui
 
+import app.godishcover.data.FoodArt
 import androidx.compose.ui.platform.testTag
 
 import androidx.compose.animation.animateColorAsState
@@ -44,7 +45,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.godishcover.R
 import app.godishcover.data.Categories
 import app.godishcover.data.DishView
@@ -209,13 +214,17 @@ private val THUMB_HUES = listOf(0xFF7B1E2E, 0xFF2F6B4F, 0xFF1F5E8C, 0xFF8A6508, 
 
 /** Initials block standing in for photos. The color is picked from the name so lists look varied. */
 @Composable
-fun Thumb(text: String, size: Int = 52, round: Boolean = false) {
+fun Thumb(text: String, size: Int = 52, round: Boolean = false, emoji: String? = null) {
     val hue = Color(THUMB_HUES[Math.floorMod(text.hashCode(), THUMB_HUES.size)])
     val bg = if (Dc.isDark) hue.copy(alpha = 0.28f) else hue.copy(alpha = 0.12f)
     Box(
         Modifier.size(size.dp).clip(if (round) CircleShape else RoundedCornerShape(12.dp)).background(bg),
         contentAlignment = Alignment.Center,
     ) {
+        if (emoji != null) {
+            Text(emoji, fontSize = (size * 0.52f).sp)
+            return@Box
+        }
         Text(
             text.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.take(1).uppercase() },
             style = MaterialTheme.typography.titleSmall, color = if (Dc.isDark) Dc.Ink else hue,
@@ -223,11 +232,53 @@ fun Thumb(text: String, size: Int = 52, round: Boolean = false) {
     }
 }
 
+/**
+ * A restaurant's picture: its logo when it has a website, else its first Google photo,
+ * else the food emoji.
+ */
+@Composable
+fun PlacePic(p: app.godishcover.data.Place, size: Int = 44, emoji: String? = null) {
+    val logo = remember(p.website) {
+        runCatching { android.net.Uri.parse(p.website.let { if (it.startsWith("http")) it else "https://$it" }).host }
+            .getOrNull()?.removePrefix("www.")?.takeIf { p.website.isNotBlank() && it.contains('.') }
+            ?.let { "https://www.google.com/s2/favicons?domain=$it&sz=128" }
+    }
+    var url by remember(p.id, p.googlePlaceId) { mutableStateOf(logo) }
+    var triedPhoto by remember(p.id, p.googlePlaceId) { mutableStateOf(false) }
+    val src = LocalPlacePhotos.current
+    LaunchedEffect(url, triedPhoto) {
+        if (url == null && !triedPhoto && src != null) { triedPhoto = true; url = src.photoUri(p) }
+    }
+    val u = url
+    if (u == null) { Thumb(p.name, size, emoji = emoji); return }
+    Box(
+        Modifier.size(size.dp).clip(RoundedCornerShape(12.dp)).background(if (Dc.isDark) Color(0xFF2A2A2A) else Color.White),
+        contentAlignment = Alignment.Center,
+    ) {
+        coil.compose.AsyncImage(
+            model = u, contentDescription = null,
+            contentScale = if (u == logo) androidx.compose.ui.layout.ContentScale.Fit else androidx.compose.ui.layout.ContentScale.Crop,
+            modifier = if (u == logo) Modifier.size((size * 0.72f).dp) else Modifier.size(size.dp),
+            onState = { st ->
+                if (st is coil.compose.AsyncImagePainter.State.Error) url = null
+                else if (st is coil.compose.AsyncImagePainter.State.Success && u == logo) {
+                    // Google answers a site with no icon by a tiny default globe; treat that as no logo.
+                    val d = st.result.drawable
+                    if (d.intrinsicWidth in 1..31) url = null
+                }
+            },
+        )
+    }
+}
+
+/** Set once at the top of the app so place pictures can ask Google for a photo. */
+val LocalPlacePhotos = androidx.compose.runtime.staticCompositionLocalOf<app.godishcover.data.PlacesSource?> { null }
+
 @Composable
 fun DishRow(v: DishView, showPlace: Boolean = true, onClick: () -> Unit) {
     Card(Modifier.testTag("dish"), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Thumb(v.dish.name)
+            Thumb(v.dish.name, emoji = FoodArt.forDish(v.dish.name, v.dish.categories))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row {

@@ -189,6 +189,7 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
     }
 
     val slide = 40
+    androidx.compose.runtime.CompositionLocalProvider(LocalPlacePhotos provides vm.placesSource) {
     Column(Modifier.fillMaxSize()) {
         UpdateBanner(vm)
         Box(Modifier.weight(1f)) {
@@ -253,6 +254,7 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
             showChangelog = false
             vm.setSettings { it.copy(seenChangelogVersion = Changelog.ALL.first().versionCode) }
         })
+    }
     }
 }
 

@@ -46,6 +46,7 @@ import app.godishcover.ui.EmptyState
 import app.godishcover.ui.GoogleAttribution
 import app.godishcover.ui.Note
 import app.godishcover.ui.Routes
+import app.godishcover.ui.PlacePic
 import app.godishcover.ui.Thumb
 import app.godishcover.ui.catLabel
 
@@ -157,7 +158,7 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, i
 fun PlaceRow(p: Place, loc: LatLng?, sub: String, onClick: () -> Unit) {
     Card(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Thumb(p.name, 44)
+            PlacePic(p, 44, emoji = app.godishcover.data.FoodArt.forPlace(p.cuisine, emptyList()))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(p.name, style = MaterialTheme.typography.titleMedium)
