@@ -38,6 +38,7 @@ android {
         versionName = if (run != null) "0.4.$run" else "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsKey\"")
+        manifestPlaceholders["MAPS_API_KEY"] = mapsKey
         buildConfigField("boolean", "HAS_FIREBASE", hasFirebase.toString())
     }
 
@@ -112,4 +113,6 @@ dependencies {
     // Google Places (New) and phone location
     implementation("com.google.android.libraries.places:places:4.1.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    // Map of nearby restaurants
+    implementation("com.google.maps.android:maps-compose:6.2.1")
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,6 +62,7 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
     var sort by rememberSaveable { mutableStateOf(PlaceSort.Distance.name) }
     var favOnly by rememberSaveable { mutableStateOf(false) }
     var menuOnly by rememberSaveable { mutableStateOf(false) }
+    var showMap by rememberSaveable { mutableStateOf(false) }
     val saved = profile?.savedPlaces.orEmpty().toSet()
 
     // What each place serves: its dish categories plus its cuisine, and its dish names for search.
@@ -97,6 +99,7 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
                 }
             }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item { Chip(if (showMap) "List" else "Map", showMap, onClick = { showMap = !showMap }) }
                 items(PlaceSort.entries) { s -> Chip(s.label, sort == s.name, onClick = { sort = s.name }) }
                 item { Chip("Favorites", favOnly, onClick = { favOnly = !favOnly }) }
                 item { Chip("Has a menu", menuOnly, onClick = { menuOnly = !menuOnly }) }
@@ -105,6 +108,10 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
                 item { Chip("All food", cat.isEmpty(), onClick = { cat = "" }) }
                 items(Categories.ALL - "other") { c -> Chip(catLabel(c), c == cat, onClick = { cat = if (cat == c) "" else c }) }
             }
+        }
+        if (showMap) {
+            RestaurantMap(shown, loc, vm.placesSource.available) { nav.navigate(Routes.place(it.id)) }
+            return@Column
         }
         LazyColumn(
             Modifier.fillMaxSize(),
@@ -154,6 +161,37 @@ private fun RestaurantRow(p: Place, km: Double?, stars: Double, dishCount: Int, 
                     tint = if (saved) Dc.Wine else Dc.Muted,
                 )
             }
+        }
+    }
+}
+
+/** Pins for the restaurants in the current filter; tapping a pin's label opens the place. */
+@Composable
+private fun RestaurantMap(shown: List<Place>, loc: LatLng?, hasKey: Boolean, onOpen: (Place) -> Unit) {
+    if (!hasKey) {
+        Box(Modifier.fillMaxSize().padding(20.dp)) { app.godishcover.ui.Note("The map turns on once the Maps key is added.") }
+        return
+    }
+    val center = loc ?: shown.firstOrNull()?.let { LatLng(it.lat, it.lng) } ?: LatLng(41.7658, -72.6734)
+    val camera = com.google.maps.android.compose.rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            com.google.android.gms.maps.model.LatLng(center.lat, center.lng), 13f,
+        )
+    }
+    com.google.maps.android.compose.GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = camera,
+        uiSettings = com.google.maps.android.compose.MapUiSettings(mapToolbarEnabled = false),
+    ) {
+        for (p in shown.take(300)) {
+            com.google.maps.android.compose.Marker(
+                state = com.google.maps.android.compose.rememberMarkerState(
+                    key = p.id, position = com.google.android.gms.maps.model.LatLng(p.lat, p.lng),
+                ),
+                title = p.name,
+                snippet = "Tap to open",
+                onInfoWindowClick = { onOpen(p) },
+            )
         }
     }
 }
