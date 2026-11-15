@@ -266,3 +266,5 @@ export const notifyOnFeed = onDocumentCreated({ document: "feed/{id}", region: "
   }
   await Promise.all(sends);
 });
+
+export * from "./rewards";

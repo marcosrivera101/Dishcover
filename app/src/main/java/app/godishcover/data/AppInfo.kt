@@ -24,6 +24,8 @@ object Changelog {
                 "Updates install from inside the app: tap Update, and Dishcover downloads the new version and opens the installer.",
                 "New Restaurants tab: every place near you, filtered by food type, sorted by distance, rating or menu size, with a Favorites filter. Add a menu from its + button.",
                 "Suggestions show each chain once, at its closest location.",
+                "Points, levels and badges: earn points for ratings, reviews, photos and menus, and level up from Nibbler to Legend.",
+                "Add a place that isn't on Google by typing its address.",
             ),
         ),
         ChangeEntry(

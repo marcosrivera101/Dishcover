@@ -104,6 +104,16 @@ service cloud.firestore {
     }
 
     // App settings published by Marcos (newest version and its download link).
+    // Points, levels and badges: written only by the server, readable so reviews can show levels.
+    match /stats/{uid} {
+      allow read: if signedIn();
+      allow write: if false;
+      match /log/{entry} {
+        allow read: if signedIn() && me() == uid;
+        allow write: if false;
+      }
+    }
+
     match /config/{doc} {
       allow read: if signedIn();
     }

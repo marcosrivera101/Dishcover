@@ -41,6 +41,8 @@ class FirebaseRepo : Repo {
     override val myRatings = MutableStateFlow<Map<String, Rating>>(emptyMap())
     override val myPlaceRatings = MutableStateFlow<Map<String, Rating>>(emptyMap())
     override val feed = MutableStateFlow<List<FeedItem>>(emptyList())
+    override val stats = MutableStateFlow(Stats())
+    private var statsListener: com.google.firebase.firestore.ListenerRegistration? = null
     private var feedCursor: DocumentSnapshot? = null
     private var feedCells: List<String> = emptyList()
 
@@ -48,6 +50,13 @@ class FirebaseRepo : Repo {
         auth.addAuthStateListener { a: FirebaseAuth ->
             val fu = a.currentUser
             user.value = fu?.let { User(it.uid, it.email ?: "", it.displayName ?: "") }
+            statsListener?.remove()
+            statsListener = null
+            if (fu != null) {
+                statsListener = db.collection("stats").document(fu.uid).addSnapshotListener { snap, _ ->
+                    stats.value = snap?.toObject(Stats::class.java) ?: Stats()
+                }
+            } else stats.value = Stats()
             if (fu == null) {
                 profile.value = null
                 myRatings.value = emptyMap()

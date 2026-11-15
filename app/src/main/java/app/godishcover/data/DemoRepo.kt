@@ -18,6 +18,20 @@ class DemoRepo(private val context: Context? = null) : Repo {
     override val isDemo = true
     override val user = MutableStateFlow<User?>(null)
     override val profile = MutableStateFlow<Profile?>(null)
+    override val stats = MutableStateFlow(Stats())
+
+    /** Test mode counts points on the phone so the rewards screen can be tried. */
+    private fun earn(points: Int, counter: String? = null) {
+        val s = stats.value
+        val total = s.points + points
+        val counts = if (counter == null) s.counts else s.counts + (counter to ((s.counts[counter] ?: 0L) + 1))
+        val badges = buildList {
+            if ((counts["ratings"] ?: 0) >= 1) add("first_bite")
+            if ((counts["ratings"] ?: 0) >= 25) add("regular_rater")
+            if ((counts["photos"] ?: 0) >= 10) add("photographer")
+        }
+        stats.value = Stats(total, Rewards.levelFor(total), counts, badges)
+    }
     override val places = MutableStateFlow<List<Place>>(emptyList())
     override val dishes = MutableStateFlow<List<Dish>>(emptyList())
     override val myRatings = MutableStateFlow<Map<String, Rating>>(emptyMap())
@@ -108,6 +122,7 @@ class DemoRepo(private val context: Context? = null) : Repo {
     override suspend fun rate(dish: Dish, stars: Int, text: String, shareToFeed: Boolean) {
         val me = user.value ?: return
         val old = myRatings.value[dish.id]
+        if (old == null) earn(10, "ratings")
         val now = System.currentTimeMillis()
         val r = Rating(dish.id, me.id, myName(), stars, text.take(500), now)
         myRatings.value = myRatings.value + (dish.id to r)

@@ -80,6 +80,8 @@ fun AddMenuScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
     var link by remember { mutableStateOf("") }
     var working by remember { mutableStateOf(false) }
     var newName by remember { mutableStateOf("") }
+    var newAddress by remember { mutableStateOf("") }
+    var addressError by remember { mutableStateOf<String?>(null) }
     var savedCount by remember { mutableStateOf(0) }
     val drafts = remember { mutableStateListOf<DraftDish>() }
 
@@ -149,6 +151,15 @@ fun AddMenuScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
                     Note("Can't find it? Search for it in the Search tab, or add it here.")
                     SectionTitle("Not on Google?")
                     OutlinedTextField(newName, { newName = it.take(60) }, label = { Text("Place name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(newAddress, { newAddress = it.take(120) }, label = { Text("Address (street, city)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    addressError?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Dc.Wine) }
+                    SecondaryButton("Add it at this address", onClick = {
+                        if (newName.isNotBlank() && newAddress.isNotBlank()) scope.launch {
+                            val found = vm.placeAtAddress(newName.trim(), newAddress.trim())
+                            if (found == null) addressError = "Couldn't find that address. Add the city and state, or use your location."
+                            else { addressError = null; place = found; label = newName.trim(); phase = Phase.Way }
+                        }
+                    }, modifier = Modifier.fillMaxWidth())
                     SecondaryButton("Add it at my current location", onClick = {
                         if (newName.isNotBlank()) {
                             place = vm.placeAtMyLocation(newName.trim()); label = newName.trim(); phase = Phase.Way

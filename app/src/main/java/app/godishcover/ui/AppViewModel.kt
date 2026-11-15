@@ -88,6 +88,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val user = repo.user
     val profile = repo.profile
+    val stats = repo.stats
     val places = repo.places
     val dishes = repo.dishes
     val myRatings = repo.myRatings
@@ -334,6 +335,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     suspend fun savePlace(p: Place): Place = repo.upsertPlace(p)
+
+    /** Looks up a typed address with the phone's own geocoder (no API key). Null when it can't be found. */
+    suspend fun placeAtAddress(name: String, address: String): Place? = withContext(Dispatchers.IO) {
+        @Suppress("DEPRECATION")
+        val hit = runCatching {
+            android.location.Geocoder(getApplication<Application>()).getFromLocationName(address, 1)?.firstOrNull()
+        }.getOrNull() ?: return@withContext null
+        val line = hit.getAddressLine(0) ?: address
+        Place(name = name, address = line, lat = hit.latitude, lng = hit.longitude)
+    }
 
     fun placeAtMyLocation(name: String): Place {
         val here = location.value ?: HARTFORD

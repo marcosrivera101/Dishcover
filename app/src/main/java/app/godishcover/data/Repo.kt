@@ -16,6 +16,8 @@ interface Repo {
     val myPlaceRatings: StateFlow<Map<String, Rating>>
     /** The "what's new" feed loaded so far, newest first. */
     val feed: StateFlow<List<FeedItem>>
+    /** The signed-in user's points, level and badges. */
+    val stats: StateFlow<Stats>
 
     suspend fun signInWithGoogleIdToken(idToken: String)
     suspend fun signInWithEmail(email: String, password: String, create: Boolean)

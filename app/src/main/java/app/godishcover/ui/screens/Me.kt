@@ -51,6 +51,8 @@ fun MeScreen(vm: AppViewModel, nav: NavHostController) {
         Text(p?.publicName?.ifBlank { null } ?: "Me", style = MaterialTheme.typography.headlineMedium)
         user?.let { Note(it.email) }
         Note("${ratings.size} ${if (ratings.size == 1) "dish" else "dishes"} rated")
+        val stats by vm.stats.collectAsState()
+        RewardsCard(stats)
 
         if (p != null) {
             SectionTitle("Your taste")
