@@ -79,7 +79,7 @@ import app.godishcover.ui.screens.WelcomeScreen
 object Routes {
     const val HOME = "home"
     const val FEED = "feed"
-    const val SEARCH = "search?cat={cat}&healthy={healthy}"
+    const val SEARCH = "search?cat={cat}&healthy={healthy}&mode={mode}"
     const val ADD = "add?placeId={placeId}"
     const val ME = "me"
     const val SUGGEST = "suggest/{cat}"
@@ -92,7 +92,7 @@ object Routes {
     const val HELP = "help"
     const val POST = "post?placeId={placeId}"
 
-    fun search(cat: String = "", healthy: Boolean = false) = "search?cat=$cat&healthy=$healthy"
+    fun search(cat: String = "", healthy: Boolean = false, mode: String = "dishes") = "search?cat=$cat&healthy=$healthy&mode=$mode"
     fun add(placeId: String = "") = "add?placeId=$placeId"
     /** "any" stands for "Surprise me". */
     fun suggest(cat: String?) = "suggest/${cat ?: "any"}"
@@ -212,9 +212,13 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
                     arguments = listOf(
                         navArgument("cat") { type = NavType.StringType; defaultValue = "" },
                         navArgument("healthy") { type = NavType.BoolType; defaultValue = false },
+                        navArgument("mode") { type = NavType.StringType; defaultValue = "dishes" },
                     ),
                 ) {
-                    SearchScreen(vm, nav, it.arguments?.getString("cat").orEmpty(), it.arguments?.getBoolean("healthy") ?: false)
+                    SearchScreen(
+                        vm, nav, it.arguments?.getString("cat").orEmpty(), it.arguments?.getBoolean("healthy") ?: false,
+                        it.arguments?.getString("mode") ?: "dishes",
+                    )
                 }
                 composable(
                     Routes.ADD,

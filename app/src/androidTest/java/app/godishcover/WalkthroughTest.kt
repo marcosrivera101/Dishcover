@@ -142,6 +142,12 @@ class WalkthroughTest {
         shot("search")
         tapExact("Healthy")
         shot("search-healthy")
+        tapExact("Restaurants")
+        waitFor("Top rated")
+        shot("restaurants")
+        tapExact("Top rated")
+        tapExact("Pizza")
+        shot("restaurants-pizza")
 
         tapExact("Add")
         waitFor("Which place?")
