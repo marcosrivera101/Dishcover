@@ -145,7 +145,7 @@ private fun RestaurantRow(p: Place, km: Double?, stars: Double, dishCount: Int, 
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(p.name, style = MaterialTheme.typography.titleMedium)
-                val food = p.cuisine.split(';', ',').map { it.trim() }.filter { it.isNotEmpty() }.take(2).joinToString(", ") { catLabel(it) }
+                val food = p.cuisine.split(';', ',').map { it.trim().replace('_', ' ').removeSuffix(" shop") }.filter { it.isNotEmpty() }.distinct().take(2).joinToString(", ") { catLabel(it) }
                 val bits = listOfNotNull(
                     km?.let { Geo.miles(it) },
                     if (p.ratingCount > 0) "★ %.1f (%d)".format(stars, p.ratingCount) else null,
