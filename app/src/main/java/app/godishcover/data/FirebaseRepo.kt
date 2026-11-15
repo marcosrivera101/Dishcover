@@ -136,6 +136,16 @@ class FirebaseRepo : Repo {
         this.profile.value = profile
     }
 
+    override suspend fun requestAreaMenus(center: LatLng) {
+        val cell = Geo.geohash(center.lat, center.lng, 5)
+        if (!askedAreas.add(cell)) return
+        val ref = db.collection("areas").document(cell)
+        // Only the first visitor creates the request; the menu check picks it up within the hour.
+        if (ref.get().await().exists()) return
+        ref.set(mapOf("status" to "waiting", "requestedAt" to System.currentTimeMillis(), "requestedBy" to uid())).await()
+    }
+    private val askedAreas = mutableSetOf<String>()
+
     override suspend fun loadNearby(center: LatLng, radiusKm: Double) {
         // Firestore allows 30 values per "in" query, so wide radiuses run a few queries.
         val chunks = Geo.cellsFor(center, radiusKm).chunked(30)

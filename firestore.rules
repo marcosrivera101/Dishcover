@@ -104,6 +104,16 @@ service cloud.firestore {
     }
 
     // App settings published by Marcos (newest version and its download link).
+    // A request to look up menus for one ~5 km area (geohash 5). Created once by a visitor, then run by the server.
+    match /areas/{cell} {
+      allow read: if signedIn();
+      allow create: if signedIn() && cell.size() == 5
+        && request.resource.data.keys().hasOnly(["status", "requestedAt", "requestedBy"])
+        && request.resource.data.status == "waiting"
+        && request.resource.data.requestedBy == me();
+      allow update, delete: if false;
+    }
+
     // Points, levels and badges: written only by the server, readable so reviews can show levels.
     match /stats/{uid} {
       allow read: if signedIn();

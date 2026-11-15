@@ -12,7 +12,7 @@ const [seedPath, changesPath] = process.argv.slice(2);
 const seed = JSON.parse(fs.readFileSync(seedPath));
 const changes = changesPath && fs.existsSync(changesPath) ? JSON.parse(fs.readFileSync(changesPath)) : null;
 const BOT = { id: "dishcover-menu-check", name: "Dishcover menu check" };
-const MAX_POSTS = 80;
+const MAX_POSTS = Number(process.env.MAX_POSTS ?? 80);
 
 const B32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 function geohash(lat, lng, precision = 4) {

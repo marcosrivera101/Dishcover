@@ -30,6 +30,8 @@ interface Repo {
 
     /** Loads places and dishes within [radiusKm] of [center]. */
     suspend fun loadNearby(center: LatLng, radiusKm: Double)
+    /** Asks the server to look up menus around here, once per area (about 5 km square). */
+    suspend fun requestAreaMenus(center: LatLng) {}
 
     /** Saves a place (deduped by Google place id) and returns it with its id. */
     suspend fun upsertPlace(place: Place): Place

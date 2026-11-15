@@ -137,6 +137,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         location.value = center
         runCatching { repo.loadNearby(center, settings.value.radiusKm) }
             .onFailure { message.value = "Couldn't load places: ${it.message}" }
+        if (here != null) runCatching { repo.requestAreaMenus(here) }
         loadFeed(more = false)
         syncAlerts()
         refreshing.value = false

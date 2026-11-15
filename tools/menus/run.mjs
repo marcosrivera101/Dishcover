@@ -17,8 +17,12 @@ const args = Object.fromEntries(
 const OUT = args.out ?? "hartford-menus.json";
 const LIMIT = Number(args.limit ?? 1000);
 // Hartford, CT city limits (plus a small margin).
-const BBOX = { s: 41.7237, w: -72.7186, n: 41.8074, e: -72.651 };
-const AREA_NAME = "Hartford, CT";
+// Another area can be passed as --bbox s,w,n,e --area "Name" (used for areas people open the app in).
+const BBOX = args.bbox
+  ? Object.fromEntries(["s", "w", "n", "e"].map((k, i) => [k, Number(args.bbox.split(",")[i])]))
+  : { s: 41.7237, w: -72.7186, n: 41.8074, e: -72.651 };
+const AREA_NAME = args.area ?? "Hartford, CT";
+const HOME = !args.bbox;
 
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 const slug = (s) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
@@ -58,7 +62,7 @@ function fromOsm(el) {
   return {
     id: `osm-${el.type[0]}${el.id}`,
     name: t.name,
-    address: street ? `${street}, ${t["addr:city"] ?? "Hartford"}, CT` : "",
+    address: street ? [street, t["addr:city"] ?? (HOME ? "Hartford" : ""), t["addr:state"] ?? (HOME ? "CT" : "")].filter(Boolean).join(", ") : "",
     lat: el.lat ?? el.center?.lat,
     lng: el.lon ?? el.center?.lon,
     cuisine: [t.cuisine, t.amenity === "cafe" ? "coffee_shop" : "", t.shop ?? ""].filter(Boolean).join(";"),
@@ -69,7 +73,7 @@ function fromOsm(el) {
 
 async function loadPlaces() {
   const osm = (await overpass()).map(fromOsm).filter((p) => p.name && p.lat && p.lng);
-  const extra = JSON.parse(fs.readFileSync(new URL("./extra-places.json", import.meta.url)));
+  const extra = HOME ? JSON.parse(fs.readFileSync(new URL("./extra-places.json", import.meta.url))) : [];
   const places = [...osm];
   for (const x of extra) {
     const match = places.find((p) => (norm(p.name).includes(norm(x.name)) || norm(x.name).includes(norm(p.name))) && km(p, x) < 0.4);

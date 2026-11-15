@@ -1,0 +1,64 @@
+name: Area menus
+
+# When someone opens the app somewhere new, the app asks for menus there (areas/{cell} in
+# Firestore). This picks up waiting areas, reads the restaurants' menus from their own
+# websites, and writes the dishes into the live app. At most 15 new areas a day.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: area-menus
+  cancel-in-progress: false
+
+jobs:
+  areas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    defaults:
+      run:
+        working-directory: tools/menus
+    env:
+      SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Look for waiting areas
+        id: next
+        run: |
+          if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret."; exit 0; fi
+          echo "$SA" > sa.json
+          npm install --no-audit --no-fund
+          echo "area=$(GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs next)" >> "$GITHUB_OUTPUT"
+      - name: Install the menu reader
+        if: steps.next.outputs.area != ''
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          npx playwright install --with-deps chromium
+      - name: Read menus (up to 3 areas)
+        if: steps.next.outputs.area != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: sa.json
+          FIRST: ${{ steps.next.outputs.area }}
+        run: |
+          area="$FIRST"
+          for i in 1 2 3; do
+            [ -z "$area" ] && break
+            cell="${area%% *}"; bbox="${area#* }"
+            echo "::group::Area $cell ($bbox)"
+            if node run.mjs --bbox "$bbox" --area "Area $cell" --limit 150 --out "area-$cell.json" \
+               && MAX_POSTS=15 node sync-firestore.mjs "area-$cell.json" \
+               && node areas.mjs done "$cell" "area-$cell.json"; then :; else node areas.mjs failed "$cell"; fi
+            echo "::endgroup::"
+            area="$(node areas.mjs next)"
+          done
+      - name: Clean up
+        if: always()
+        run: rm -f sa.json
