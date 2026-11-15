@@ -238,9 +238,10 @@ fun Thumb(text: String, size: Int = 52, round: Boolean = false, emoji: String? =
  */
 @Composable
 fun PlacePic(p: app.godishcover.data.Place, size: Int = 44, emoji: String? = null) {
-    val logo = remember(p.website) {
-        runCatching { android.net.Uri.parse(p.website.let { if (it.startsWith("http")) it else "https://$it" }).host }
-            .getOrNull()?.removePrefix("www.")?.takeIf { p.website.isNotBlank() && it.contains('.') }
+    val logo = remember(p.website, p.name) {
+        val site = app.godishcover.data.ChainSites.site(p.name) ?: p.website
+        runCatching { android.net.Uri.parse(site.let { if (it.startsWith("http")) it else "https://$it" }).host }
+            .getOrNull()?.removePrefix("www.")?.takeIf { site.isNotBlank() && it.contains('.') }
             ?.let { "https://www.google.com/s2/favicons?domain=$it&sz=128" }
     }
     var url by remember(p.id, p.googlePlaceId) { mutableStateOf(logo) }

@@ -48,3 +48,40 @@ object FoodArt {
             ?: "🍽️"
     }
 }
+
+/** Websites of big chains, so they show their own logo even when a place has no website saved. */
+object ChainSites {
+    private val SITES = mapOf(
+        "mcdonalds" to "mcdonalds.com", "burgerking" to "bk.com", "wendys" to "wendys.com",
+        "tacobell" to "tacobell.com", "chipotle" to "chipotle.com", "chipotlemexicangrill" to "chipotle.com",
+        "subway" to "subway.com", "starbucks" to "starbucks.com", "dunkin" to "dunkindonuts.com",
+        "dunkindonuts" to "dunkindonuts.com", "kfc" to "kfc.com", "popeyes" to "popeyes.com",
+        "popeyeslouisianakitchen" to "popeyes.com", "chickfila" to "chick-fil-a.com", "dominos" to "dominos.com",
+        "dominospizza" to "dominos.com", "pizzahut" to "pizzahut.com", "papajohns" to "papajohns.com",
+        "littlecaesars" to "littlecaesars.com", "panerabread" to "panerabread.com", "panera" to "panerabread.com",
+        "fiveguys" to "fiveguys.com", "shakeshack" to "shakeshack.com", "wingstop" to "wingstop.com",
+        "arbys" to "arbys.com", "sonic" to "sonicdrivein.com", "sonicdrivein" to "sonicdrivein.com",
+        "jerseymikes" to "jerseymikes.com", "jerseymikessubs" to "jerseymikes.com", "jimmyjohns" to "jimmyjohns.com",
+        "pandaexpress" to "pandaexpress.com", "olivegarden" to "olivegarden.com", "applebees" to "applebees.com",
+        "applebeesgrillbar" to "applebees.com", "chilis" to "chilis.com", "chilisgrillbar" to "chilis.com",
+        "ihop" to "ihop.com", "dennys" to "dennys.com", "texasroadhouse" to "texasroadhouse.com",
+        "outback" to "outback.com", "outbacksteakhouse" to "outback.com", "redlobster" to "redlobster.com",
+        "buffalowildwings" to "buffalowildwings.com", "qdoba" to "qdoba.com", "qdobamexicaneats" to "qdoba.com",
+        "moes" to "moes.com", "moessouthwestgrill" to "moes.com", "dairyqueen" to "dairyqueen.com",
+        "baskinrobbins" to "baskinrobbins.com", "cheesecakefactory" to "thecheesecakefactory.com",
+        "thecheesecakefactory" to "thecheesecakefactory.com", "crackerbarrel" to "crackerbarrel.com",
+        "fridays" to "tgifridays.com", "tgifridays" to "tgifridays.com", "rubytuesday" to "rubytuesday.com",
+        "jackinthebox" to "jackinthebox.com", "whitecastle" to "whitecastle.com", "culvers" to "culvers.com",
+        "sweetgreen" to "sweetgreen.com", "cava" to "cava.com", "noodlescompany" to "noodles.com",
+        "bojangles" to "bojangles.com", "zaxbys" to "zaxbys.com", "raisingcanes" to "raisingcanes.com",
+        "firehousesubs" to "firehousesubs.com", "potbelly" to "potbelly.com", "krispykreme" to "krispykreme.com",
+        "timhortons" to "timhortons.com", "einsteinbrosbagels" to "einsteinbros.com", "auntieannes" to "auntieannes.com",
+        "cinnabon" to "cinnabon.com", "smoothieking" to "smoothieking.com", "tropicalsmoothiecafe" to "tropicalsmoothiecafe.com",
+        "kungfutea" to "kungfutea.com", "gongcha" to "gong-cha.com", "pfchangs" to "pfchangs.com",
+        "longhornsteakhouse" to "longhornsteakhouse.com", "bjsrestaurantbrewhouse" to "bjsrestaurants.com",
+        "carrabbasitaliangrill" to "carrabbas.com", "bertuccis" to "bertuccis.com", "friendlys" to "friendlys.com",
+        "99restaurant" to "99restaurants.com", "99restaurantpub" to "99restaurants.com", "wingsover" to "wingsover.com",
+    )
+
+    fun site(name: String): String? = SITES[name.lowercase().replace("’", "").replace(Regex("[^a-z0-9]"), "")]
+}
