@@ -50,7 +50,7 @@ import app.godishcover.ui.Thumb
 import app.godishcover.ui.catLabel
 
 @Composable
-fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, initialHealthy: Boolean = false, initialMode: String = "dishes") {
+fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, initialHealthy: Boolean = false) {
     val dishes by vm.dishes.collectAsState()
     val places by vm.places.collectAsState()
     val ratings by vm.myRatings.collectAsState()
@@ -60,7 +60,7 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, i
     var query by rememberSaveable { mutableStateOf("") }
     var cat by rememberSaveable { mutableStateOf(initialCat) }
     var nearOnly by rememberSaveable { mutableStateOf(true) }
-    var tab by rememberSaveable { mutableStateOf(if (initialMode == "places") "places" else "dishes") }
+    var tab by rememberSaveable { mutableStateOf("dishes") }
     var healthy by rememberSaveable { mutableStateOf(initialHealthy) }
     var tag by rememberSaveable { mutableStateOf("") }
     val settings by vm.settings.collectAsState()
@@ -85,16 +85,11 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, i
         .sortedBy { p -> loc?.let { Geo.distanceKm(it, LatLng(p.lat, p.lng)) } ?: 0.0 }
     val googleOnly = google.filter { g -> vm.savedFor(g) == null }
 
-    if (tab == "places") {
-        RestaurantsScreen(vm, nav, initialCat = cat) { tab = "dishes" }
-        return
-    }
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ModeSwitch(dishes = true, onDishes = {}, onPlaces = { tab = "places" })
             OutlinedTextField(
                 query, { query = it },
-                placeholder = { Text("Search dishes") },
+                placeholder = { Text("Search dishes or restaurants") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -107,6 +102,8 @@ fun SearchScreen(vm: AppViewModel, nav: NavHostController, initialCat: String, i
                 items(Categories.ALL) { c -> Chip(catLabel(c), c == cat, onClick = { cat = if (cat == c) "" else c }) }
             }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item { Chip("Dishes", tab == "dishes", onClick = { tab = "dishes" }) }
+                item { Chip("Restaurants", tab == "places", onClick = { tab = "places" }) }
                 items(Categories.TAGS - Categories.HEALTHY) { t ->
                     Chip(catLabel(t), tag == t, onClick = { tag = if (tag == t) "" else t; tab = "dishes" })
                 }
@@ -168,14 +165,5 @@ fun PlaceRow(p: Place, loc: LatLng?, sub: String, onClick: () -> Unit) {
                 Text(listOfNotNull(dist, sub).joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = Dc.Muted)
             }
         }
-    }
-}
-
-/** The Dishes / Restaurants switch at the top of Search. */
-@Composable
-fun ModeSwitch(dishes: Boolean, onDishes: () -> Unit, onPlaces: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Chip("Dishes", dishes, onClick = onDishes)
-        Chip("Restaurants", !dishes, onClick = onPlaces)
     }
 }

@@ -13,15 +13,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import app.godishcover.data.Categories
@@ -52,15 +50,12 @@ private enum class PlaceSort(val label: String) { Distance("Closest"), Rating("T
 
 /** Every restaurant near you, with food-type filters, sorting, favorites and search. */
 @Composable
-fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController, initialCat: String = "", onDishes: () -> Unit) {
+fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
     val places by vm.places.collectAsState()
     val dishes by vm.dishes.collectAsState()
     val loc by vm.location.collectAsState()
     val profile by vm.profile.collectAsState()
-    val google by vm.googleResults.collectAsState()
-    androidx.compose.runtime.LaunchedEffect(query, loc) { if (vm.placesSource.available) vm.searchGoogle(query) }
-    var query by rememberSaveable { mutableStateOf("") }
-    var cat by rememberSaveable { mutableStateOf(initialCat) }
+    var cat by rememberSaveable { mutableStateOf("") }
     var sort by rememberSaveable { mutableStateOf(PlaceSort.Distance.name) }
     var favOnly by rememberSaveable { mutableStateOf(false) }
     var menuOnly by rememberSaveable { mutableStateOf(false) }
@@ -68,25 +63,17 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController, initialCat: Stri
 
     // What each place serves: its dish categories plus its cuisine, and its dish names for search.
     val byPlace = remember(dishes) { dishes.groupBy { it.placeId } }
-    val q = query.trim().lowercase()
     fun dist(p: Place) = loc?.let { Geo.distanceKm(it, LatLng(p.lat, p.lng)) }
     fun rating(p: Place) = if (p.ratingCount > 0) p.ratingSum.toDouble() / p.ratingCount else 0.0
     fun serves(p: Place, c: String): Boolean {
         val ds = byPlace[p.id].orEmpty()
         return ds.any { c in it.categories } || p.cuisine.lowercase().split(';', ',', ' ').any { it.trim() == c }
     }
-    fun matches(p: Place): Boolean {
-        if (q.isEmpty()) return true
-        if (p.name.lowercase().contains(q) || p.cuisine.lowercase().contains(q)) return true
-        val ds = byPlace[p.id].orEmpty()
-        return ds.any { it.name.lowercase().contains(q) || it.categories.any { c -> catLabel(c).lowercase().contains(q) } }
-    }
 
     val shown = places.asSequence()
         .filter { !favOnly || it.id in saved }
         .filter { !menuOnly || byPlace[it.id].orEmpty().isNotEmpty() }
         .filter { cat.isEmpty() || serves(it, cat) }
-        .filter(::matches)
         .toList()
         .let { list ->
             when (PlaceSort.valueOf(sort)) {
@@ -99,15 +86,14 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController, initialCat: Stri
 
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ModeSwitch(dishes = false, onDishes = onDishes, onPlaces = {})
-            OutlinedTextField(
-                query, { query = it },
-                placeholder = { Text("Search by name or food") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Restaurants near you", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                TextButton(onClick = { nav.navigate(Routes.add()) }) {
+                    Icon(Icons.Filled.Add, contentDescription = null, tint = Dc.Wine)
+                    Spacer(Modifier.width(4.dp))
+                    Text("Add menu", color = Dc.Wine)
+                }
+            }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(PlaceSort.entries) { s -> Chip(s.label, sort == s.name, onClick = { sort = s.name }) }
                 item { Chip("Favorites", favOnly, onClick = { favOnly = !favOnly }) }
@@ -130,20 +116,10 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController, initialCat: Stri
                     onSave = { vm.toggleSaved(p.id) },
                 ) { nav.navigate(Routes.place(p.id)) }
             }
-            val googleOnly = google.filter { g -> vm.savedFor(g) == null }
-            if (googleOnly.isNotEmpty()) {
-                item { Spacer(Modifier.height(4.dp)); app.godishcover.ui.GoogleAttribution() }
-                items(googleOnly, key = { "g-" + it.googlePlaceId }) { g ->
-                    PlaceRow(g, loc, "No menu yet · add one") {
-                        vm.pendingPlace.value = g
-                        nav.navigate(Routes.add())
-                    }
-                }
-            }
-            if (shown.isEmpty() && googleOnly.isEmpty()) {
+            if (shown.isEmpty()) {
                 item {
                     if (favOnly && saved.isEmpty()) EmptyState("No favorites yet", "Tap the heart on any restaurant to keep it here.")
-                    else EmptyState("No restaurants match", "Try another food type or search, or add the place yourself.", "Add a menu") { nav.navigate(Routes.add()) }
+                    else EmptyState("No restaurants match", "Try another food type, or add the place yourself.", "Add a menu") { nav.navigate(Routes.add()) }
                 }
             }
             item { Spacer(Modifier.height(8.dp)) }

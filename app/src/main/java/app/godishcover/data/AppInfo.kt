@@ -22,7 +22,7 @@ object Changelog {
                 "Post photos to the feed, and add a restaurant's menu from a photo or a link.",
                 "Alerts when something new is posted near you.",
                 "Updates install from inside the app: tap Update, and Dishcover downloads the new version and opens the installer.",
-                "Search has a Restaurants side: every place near you, filtered by food type, sorted by distance, rating or menu size, with a Favorites filter.",
+                "New Restaurants tab: every place near you, filtered by food type, sorted by distance, rating or menu size, with a Favorites filter. Add a menu from its + button.",
                 "Suggestions show each chain once, at its closest location.",
             ),
         ),

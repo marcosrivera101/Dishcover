@@ -149,7 +149,7 @@ class WalkthroughTest {
         tapExact("Pizza")
         shot("restaurants-pizza")
 
-        tapExact("Add")
+        tap("Add menu")
         waitFor("Which place?")
         shot("add-menu")
 

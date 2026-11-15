@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -59,6 +60,7 @@ import app.godishcover.ui.screens.AboutScreen
 import app.godishcover.ui.screens.AccountScreen
 import app.godishcover.ui.screens.AddMenuScreen
 import app.godishcover.ui.screens.ChangelogSheet
+import app.godishcover.ui.screens.RestaurantsScreen
 import app.godishcover.ui.screens.DishScreen
 import app.godishcover.ui.screens.FeedScreen
 import app.godishcover.ui.screens.HelpScreen
@@ -79,7 +81,8 @@ import app.godishcover.ui.screens.WelcomeScreen
 object Routes {
     const val HOME = "home"
     const val FEED = "feed"
-    const val SEARCH = "search?cat={cat}&healthy={healthy}&mode={mode}"
+    const val PLACES = "places"
+    const val SEARCH = "search?cat={cat}&healthy={healthy}"
     const val ADD = "add?placeId={placeId}"
     const val ME = "me"
     const val SUGGEST = "suggest/{cat}"
@@ -92,7 +95,7 @@ object Routes {
     const val HELP = "help"
     const val POST = "post?placeId={placeId}"
 
-    fun search(cat: String = "", healthy: Boolean = false, mode: String = "dishes") = "search?cat=$cat&healthy=$healthy&mode=$mode"
+    fun search(cat: String = "", healthy: Boolean = false) = "search?cat=$cat&healthy=$healthy"
     fun add(placeId: String = "") = "add?placeId=$placeId"
     /** "any" stands for "Surprise me". */
     fun suggest(cat: String?) = "suggest/${cat ?: "any"}"
@@ -207,18 +210,15 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
             ) {
                 composable(Routes.HOME) { HomeScreen(vm, nav) }
                 composable(Routes.FEED) { FeedScreen(vm, nav) }
+                composable(Routes.PLACES) { RestaurantsScreen(vm, nav) }
                 composable(
                     Routes.SEARCH,
                     arguments = listOf(
                         navArgument("cat") { type = NavType.StringType; defaultValue = "" },
                         navArgument("healthy") { type = NavType.BoolType; defaultValue = false },
-                        navArgument("mode") { type = NavType.StringType; defaultValue = "dishes" },
                     ),
                 ) {
-                    SearchScreen(
-                        vm, nav, it.arguments?.getString("cat").orEmpty(), it.arguments?.getBoolean("healthy") ?: false,
-                        it.arguments?.getString("mode") ?: "dishes",
-                    )
+                    SearchScreen(vm, nav, it.arguments?.getString("cat").orEmpty(), it.arguments?.getBoolean("healthy") ?: false)
                 }
                 composable(
                     Routes.ADD,
@@ -259,8 +259,8 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
 private enum class Tabs(val route: String, val label: String, val icon: ImageVector) {
     Today(Routes.HOME, "Today", Icons.Filled.Home),
     Feed(Routes.FEED, "Feed", Icons.Filled.Notifications),
+    Places(Routes.PLACES, "Restaurants", Icons.Filled.Place),
     Search(Routes.search(), "Search", Icons.Filled.Search),
-    Add(Routes.add(), "Add", Icons.Filled.Add),
     Me(Routes.ME, "Me", Icons.Filled.Person),
 }
 
