@@ -137,21 +137,22 @@ class WalkthroughTest {
         shot("post")
         back()
 
-        tapExact("Search")
-        waitFor("Near me")
-        shot("search")
-        tapExact("Healthy")
-        shot("search-healthy")
+        // The Restaurants tab first: Search has its own "Restaurants" chip.
         tapExact("Restaurants")
         waitFor("Top rated")
         shot("restaurants")
         tapExact("Top rated")
         tapExact("Pizza")
         shot("restaurants-pizza")
-
         tap("Add menu")
         waitFor("Which place?")
         shot("add-menu")
+
+        tapExact("Search")
+        waitFor("Near me")
+        shot("search")
+        tapExact("Healthy")
+        shot("search-healthy")
 
         tapExact("Me")
         waitFor("Your taste")
