@@ -3,7 +3,7 @@
 
 const DISH_RULES = [
   ["burger", /burger|whopper|baconator|big mac|quarter pounder|mcdouble|slamburger|smash\b|patty melt|dave's (single|double)/],
-  ["pizza", /pizza|calzone|stromboli|apizza|\bpie\b(?!.*(apple|pecan|pumpkin|key lime|cream|pot))/],
+  ["pizza", /pizza|calzone|stromboli|apizza|^(?!.*(apple|pecan|pumpkin|key lime|cream|\bpot\b|shepherd|spinach|sundae|cherry|sweet potato|chocolate|lemon|blueberry|peach|strawberry|berry|hand pie|turnover|mince|custard|sweet|dessert)).*\bpie\b/],
   ["tacos", /taco|birria/],
   ["burrito", /burrito|quesadilla|chimichanga|enchilada|nachos|crunchwrap|chalupa|gordita|fajita/],
   ["sandwich", /sandwich|\bsub\b|grinder|hoagie|panini|\bwrap\b|cubano|\bclub\b|\bblt\b|b\.l\.t|\bmelt\b|\bhero\b|po' ?boy|croissan'wich|philly|cheesesteak|cheese steak|reuben|banh mi|gyro|torta|stacker|biscuit (sandwich|with (egg|sausage|bacon))/],
@@ -25,7 +25,7 @@ const DISH_RULES = [
   ["breakfast", /pancake|hotcake|waffle|omelet|omelette|french toast|\beggs?\b|benedict|breakfast|hash ?brown|home fries|egg (and|&) cheese|crepe|grand slam|\bslam\b|mcmuffin|scramble|frittata|oatmeal|grits|chilaquiles|huevos|wake-up wrap|avocado toast/],
   ["bagels", /bagel/],
   ["fries and sides", /\bfries\b|\btots\b|onion rings|mozzarella sticks|coleslaw|cole slaw|mashed potato|\bplantain|tostones|maduros|garlic knots|garlic bread|breadsticks|bread bites|side salad|mac (and|&) cheese side|cornbread|hush ?pupp|baked potato|corn on the cob/],
-  ["dessert", /cake|cheesecake|brownie|cookie|\bpie\b(?=.*(apple|pecan|pumpkin|key lime|cream|sundae))|apple pie|tiramisu|cannol|flan|sundae|churro|pudding|dessert|tres leches|mousse|cobbler|baklava|creme brulee|crème brûlée|beignet|mochi|mcflurry|frosty|lava|cinnamon (twists|sticks|delights|bread)|zeppole/],
+  ["dessert", /cake|cheesecake|brownie|cookie|^(?=.*(apple|sundae|pecan|pumpkin|key lime|cream|cherry|sweet potato|chocolate|lemon|blueberry|peach|strawberry|berry|hand pie|mince|custard|sweet|dessert)).*\bpies?\b|turnover|tiramisu|cannol|flan|sundae|churro|pudding|dessert|tres leches|mousse|cobbler|baklava|creme brulee|crème brûlée|beignet|mochi|mcflurry|frosty|lava|cinnamon (twists|sticks|delights|bread)|zeppole/],
   ["bakery", /croissant|muffin|scone|danish|pastr|\bloaf\b|banana bread|coco bread|\bpatty\b(?!.*melt)|patties|empanada|pastelillo|turnover|bun\b|roll(s)? \(|biscotti|bread pudding/],
   ["donuts", /donut|doughnut|munchkin|cruller|fritter/],
   ["ice cream", /ice cream|gelato|sorbet|frozen yogurt|froyo|milkshake|\bshake\b|\bcone\b|sundae|frosty|mcflurry|coolatta|freeze\b/],
