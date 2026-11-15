@@ -34,6 +34,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +53,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.godishcover.BuildConfig
+import app.godishcover.data.Changelog
 import app.godishcover.data.Profile
 import app.godishcover.ui.screens.AboutScreen
 import app.godishcover.ui.screens.AccountScreen
@@ -165,12 +167,16 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
     val nav = rememberNavController()
     val settings by vm.settings.collectAsState()
     val start = remember { if (settings.startTab == "feed") Routes.FEED else Routes.HOME }
-    var showChangelog by remember { mutableStateOf(settings.seenChangelogVersion < BuildConfig.VERSION_CODE) }
+    var showChangelog by remember { mutableStateOf(settings.seenChangelogVersion < Changelog.ALL.first().versionCode) }
 
     LaunchedEffect(Unit) {
         vm.refreshLocation()
         vm.loadNews()
+    }
+    // Look for a newer build every time the app comes back to the front.
+    LifecycleResumeEffect(settings.autoCheckUpdates) {
         if (settings.autoCheckUpdates) vm.checkForUpdate(manual = false)
+        onPauseOrDispose { }
     }
     LaunchedEffect(openFeed) {
         if (openFeed) {
@@ -241,7 +247,7 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
     if (showChangelog) {
         ChangelogSheet(onDismiss = {
             showChangelog = false
-            vm.setSettings { it.copy(seenChangelogVersion = BuildConfig.VERSION_CODE) }
+            vm.setSettings { it.copy(seenChangelogVersion = Changelog.ALL.first().versionCode) }
         })
     }
 }

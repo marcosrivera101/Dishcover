@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -199,14 +200,23 @@ fun UpdateBanner(vm: AppViewModel) {
     val ctx = LocalContext.current
     AnimatedVisibility(visible = update != null, enter = expandVertically(), exit = shrinkVertically()) {
         val u = update
+        val progress by vm.updateProgress.collectAsState()
+        val err by vm.updateError.collectAsState()
         if (u != null) {
-            Row(
-                Modifier.fillMaxWidth().background(Dc.WineTint).padding(horizontal = 16.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("Version ${u.versionName} is ready", style = MaterialTheme.typography.titleSmall, color = Dc.WineDark, modifier = Modifier.weight(1f))
-                TextButton(onClick = { openLink(ctx, u.apkUrl) }) { Text("Update", color = Dc.Wine) }
-                TextButton(onClick = { vm.update.value = null }) { Text("Later", color = Dc.Muted) }
+            Column(Modifier.fillMaxWidth().background(Dc.WineTint).padding(horizontal = 16.dp, vertical = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (progress != null) "Downloading ${u.versionName}… ${((progress ?: 0f) * 100).toInt()}%" else "Version ${u.versionName} is ready",
+                        style = MaterialTheme.typography.titleSmall, color = Dc.WineDark, modifier = Modifier.weight(1f),
+                    )
+                    if (progress == null) {
+                        TextButton(onClick = { vm.installUpdate() }) { Text("Update", color = Dc.Wine) }
+                        TextButton(onClick = { vm.update.value = null }) { Text("Later", color = Dc.Muted) }
+                    }
+                }
+                if (progress != null) LinearProgressIndicator(progress = { progress ?: 0f }, modifier = Modifier.fillMaxWidth(), color = Dc.Wine)
+                if (u.notes.isNotBlank() && progress == null) Text(u.notes, style = MaterialTheme.typography.bodySmall, color = Dc.WineDark, maxLines = 3)
+                err?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Dc.WineDark) }
             }
         }
     }
@@ -254,8 +264,16 @@ fun AboutScreen(vm: AppViewModel, nav: NavHostController) {
             if (u != null) {
                 Text("Version ${u.versionName} is ready", style = MaterialTheme.typography.titleMedium, color = Dc.Wine)
                 if (u.notes.isNotBlank()) Text(u.notes, style = MaterialTheme.typography.bodyMedium)
-                PrimaryButton("Download the update", onClick = { openLink(ctx, u.apkUrl) })
-                Note("Your phone downloads the new version; open it from the download notice to install. Your account and ratings stay.")
+                val progress by vm.updateProgress.collectAsState()
+                val err by vm.updateError.collectAsState()
+                if (progress != null) {
+                    Text("Downloading… ${((progress ?: 0f) * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium)
+                    LinearProgressIndicator(progress = { progress ?: 0f }, modifier = Modifier.fillMaxWidth(), color = Dc.Wine)
+                } else {
+                    PrimaryButton("Update now", onClick = { vm.installUpdate() })
+                }
+                err?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Dc.Wine) }
+                Note("Dishcover downloads the new version and asks Android to install it. Your account and ratings stay.")
             } else {
                 SecondaryButton("Check for updates", onClick = { vm.checkForUpdate(manual = true) }, modifier = Modifier.fillMaxWidth())
                 checked?.let { Note(it) }

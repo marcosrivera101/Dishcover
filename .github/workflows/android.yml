@@ -23,8 +23,9 @@ jobs:
       - name: Read version
         id: version
         run: |
-          echo "name=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
-          echo "code=$(grep -oP 'versionCode = \K[0-9]+' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
+          # Must match the numbering in app/build.gradle.kts.
+          echo "name=0.4.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "code=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
 
       # The Firebase config: either committed at app/google-services.json or stored as the
       # GOOGLE_SERVICES_JSON repository secret. Without it the APK runs in demo mode.
@@ -78,6 +79,7 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           APK_URL: https://github.com/${{ github.repository }}/releases/download/test-builds/dishcover.apk
+          RELEASE_NOTES: Fixes and improvements.
         if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && env.FIREBASE_SERVICE_ACCOUNT != ''
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"

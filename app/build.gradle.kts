@@ -31,8 +31,11 @@ android {
         applicationId = "app.godishcover"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        // CI builds number themselves from the run, so every build is newer than the last
+        // and the in-app updater can offer it.
+        val run = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        versionCode = if (run != null) 100 + run else 3
+        versionName = if (run != null) "0.4.$run" else "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsKey\"")
         buildConfigField("boolean", "HAS_FIREBASE", hasFirebase.toString())

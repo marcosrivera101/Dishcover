@@ -33,6 +33,7 @@ import app.godishcover.data.Place
 import app.godishcover.data.PlaceSuggestion
 import app.godishcover.data.Profile
 import app.godishcover.data.Suggest
+import app.godishcover.data.Updater
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -211,6 +212,30 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         } else if (manual) {
             updateChecked.value = if (repo.isDemo) "Update checks turn on when the app is connected to the server."
             else "You're on the newest version."
+        }
+    }
+
+    /** Download progress of an update: null when idle, 0..1 while downloading. */
+    val updateProgress = MutableStateFlow<Float?>(null)
+    val updateError = MutableStateFlow<String?>(null)
+
+    /** Downloads the new build inside the app, then opens Android's installer. */
+    fun installUpdate() {
+        val r = update.value ?: return
+        val ctx = getApplication<Application>()
+        if (updateProgress.value != null) return
+        if (Updater.needsInstallPermission(ctx)) {
+            updateError.value = "Allow Dishcover to install updates, then tap Update again."
+            Updater.openInstallPermission(ctx)
+            return
+        }
+        updateError.value = null
+        updateProgress.value = 0f
+        viewModelScope.launch {
+            runCatching { Updater.download(ctx, r.apkUrl) { p -> updateProgress.value = p } }
+                .onSuccess { Updater.install(ctx, it) }
+                .onFailure { updateError.value = it.message ?: "The download failed. Try again." }
+            updateProgress.value = null
         }
     }
 
