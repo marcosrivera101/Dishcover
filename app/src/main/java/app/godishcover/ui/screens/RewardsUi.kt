@@ -54,7 +54,7 @@ fun RewardsCard(stats: Stats) {
                     Rewards.HOW.forEach { (what, pts) ->
                         Row { Text(what, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)); Text(pts, style = MaterialTheme.typography.labelLarge, color = Dc.Wine) }
                     }
-                    Note("Up to 150 points a day. Rating the same dish again doesn't count twice, and removed posts take their points back.")
+                    Note("Rating the same dish again doesn't count twice, likes count up to 20 points a day, and removed posts take their points back.")
                     SectionTitle("Levels")
                     Rewards.LEVELS.forEachIndexed { i, (pts, name) ->
                         Row { Text("${i + 1}. $name", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)); Text("$pts", style = MaterialTheme.typography.bodySmall, color = Dc.Muted) }

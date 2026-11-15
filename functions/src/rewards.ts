@@ -14,7 +14,6 @@ const REGION = "us-central1";
 export const POINTS = {
   rate: 10, review: 5, photo: 10, first: 10, dish: 5, place: 25, fullMenu: 25, like: 2,
 };
-const DAY_CAP = 150;
 const LIKE_DAY_CAP = 20;
 const REVIEW_MIN_CHARS = 40;
 
@@ -68,7 +67,7 @@ async function award(uid: string, awards: Award[]) {
     let changed = false;
     awards.forEach((a, i) => {
       if (logs[i].exists) return;
-      let pts = Math.max(0, Math.min(a.points, DAY_CAP - dayPoints));
+      let pts = Math.max(0, a.points);
       if (a.kind === "like") { pts = Math.min(pts, LIKE_DAY_CAP - dayLikes); dayLikes += pts; }
       dayPoints += pts;
       points += pts;

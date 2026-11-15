@@ -51,7 +51,7 @@ object Rewards {
 
     val PERKS = listOf(
         3 to "Extra app colors",
-        5 to "No ads, once ads arrive",
         6 to "Early access to new features",
+        8 to "No ads, once ads arrive",
     )
 }
