@@ -80,7 +80,13 @@ async function loadPlaces() {
       if (x.website && /menu/.test(x.website)) match.website = x.website;
     } else places.push({ id: `x-${slug(x.name)}`, brand: "", ...x });
   }
-  log(`places: ${osm.length} from OpenStreetMap, ${places.length} after adding the extra list`);
+  const links = JSON.parse(fs.readFileSync(new URL("./menu-links.json", import.meta.url)));
+  let linked = 0;
+  for (const p of places) {
+    const url = links[p.name] ?? Object.entries(links).find(([k]) => !k.startsWith("_") && norm(k) === norm(p.name))?.[1];
+    if (url) { p.website = url; linked++; }
+  }
+  log(`places: ${osm.length} from OpenStreetMap, ${places.length} after adding the extra list, ${linked} with a hand-found menu link`);
   return places;
 }
 
