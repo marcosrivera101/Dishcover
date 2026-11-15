@@ -53,7 +53,11 @@ async function main() {
   }
   let added = 0;
   for (const d of seed.dishes) {
-    if (existingDishes.has(d.id)) continue;
+    if (existingDishes.has(d.id)) {
+      // Keep ratings; refresh only what the menu reader decides.
+      ops.push((b) => b.set(db.collection("dishes").doc(d.id), { categories: d.categories, tags: d.tags ?? [], allergens: d.allergens ?? [] }, { merge: true }));
+      continue;
+    }
     const p = placeById.get(d.placeId);
     if (!p) continue;
     added++;

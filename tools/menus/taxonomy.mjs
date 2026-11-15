@@ -30,7 +30,7 @@ const DISH_RULES = [
   ["donuts", /donut|doughnut|munchkin|cruller|fritter/],
   ["ice cream", /ice cream|gelato|sorbet|frozen yogurt|froyo|milkshake|\bshake\b|\bcone\b|sundae|frosty|mcflurry|coolatta|freeze\b/],
   ["coffee", /coffee|latte|espresso|cappuccino|americano|macchiato|cold brew|mocha|cortado|frappuccino|frappé|frappe|flat white|pike place|roast\b/],
-  ["bubble tea", /bubble tea|\bboba\b|milk tea|taro|matcha|thai tea|chai/],
+  ["bubble tea", /bubble tea|\bboba\b|milk tea|taro|thai tea/],
   ["smoothies and juice", /smoothie|juice|acai|açaí|lemonade|refresher|agua fresca|batido|sea moss/],
 ];
 
@@ -96,6 +96,7 @@ const DISH_CUISINE = [
 
 const MEAT = /chicken|beef|pork|bacon|ham\b|steak|sausage|pepperoni|turkey|lamb|goat|oxtail|brisket|shrimp|fish|salmon|tuna|crab|lobster|clam|meat|chorizo|prosciutto|salami|pastrami|anchov|carnitas|pernil|veal|duck|wings?\b|jerk|scallop|calamari|octopus|mussel|oyster|cod|tilapia|eel|burger(?!.*(veggie|impossible|beyond|black bean))/;
 const FRIED = /fried|crispy|tempura|battered|breaded|fries|nugget|tender|bacon|alfredo|cream|loaded|buffalo|cheesesteak|philly|\bparm\b|parmigiana|cake|cookie|donut|shake|sundae|brownie|pie\b|carbonara|mac (and|&) cheese|double|triple|deluxe|supreme|stuffed/;
+const ALCOHOL = /\bbeer|\blight\b.*\b(lager|ale)\b|bud light|miller|coors|michelob|corona|modelo|heineken|stella|guinness|\bipa\b|lager|\bale\b|stout|pilsner|cider|seltzer|wine|merlot|cabernet|pinot|chardonnay|sauvignon|prosecco|champagne|sangria|cocktail|margarita|martini|mojito|vodka|tequila|whiskey|bourbon|\brum\b|\bgin\b|mimosa|spritz/;
 const HEALTHY = /salad|grilled|steamed|\bbowl\b|poke|acai|açaí|smoothie|veggie|vegetable|quinoa|kale|broiled|lean|light|protein|avocado toast|oatmeal|fruit|sashimi|nigiri|lettuce wrap|egg white|baked salmon|roasted vegetables|power|greens|hummus|lentil|chickpea|tofu|edamame|ceviche|pho\b|miso soup|fit slam/;
 
 export function categorize(name, description = "", cuisine = "", section = "") {
@@ -126,7 +127,7 @@ export function tagsFor(name, description = "", cuisine = "") {
   if (tags.has("vegan") || (/vegetarian|veggie|\(v\)|meatless|impossible|tofu|falafel|caprese|margherita|cheese pizza|eggplant|paneer|spinach|black bean|bean burrito|grilled cheese/.test(text) && !meat)) tags.add("vegetarian");
   if (/gluten[- ]free|\bgf\b/.test(text)) tags.add("gluten-free");
   if (/spicy|\bhot\b|jalape|buffalo|sriracha|diablo|nashville|habanero|ghost pepper|jerk|vindaloo|szechuan|sichuan|atomic|fra diavolo|chipotle|kimchi|mapo|curry goat/.test(text)) tags.add("spicy");
-  if (HEALTHY.test(text) && !FRIED.test(text)) tags.add("healthy");
+  if (HEALTHY.test(text) && !FRIED.test(text) && !ALCOHOL.test(text)) tags.add("healthy");
   return [...tags];
 }
 

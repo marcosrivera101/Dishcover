@@ -64,12 +64,18 @@ object Suggest {
     }
 
     /** Up to [maxPlaces] places with up to [perPlace] dishes each, best first. */
+    /** One location per restaurant name (chains have many): the closest one, kept at the rank of its best location. */
     fun places(ranked: List<DishView>, places: Map<String, Place>, maxPlaces: Int = 5, perPlace: Int = 3): List<PlaceSuggestion> =
         ranked.groupBy { it.dish.placeId }
             .entries
+            .groupBy { (_, list) -> chainKey(list.first().dish.placeName) }
+            .values
             .take(maxPlaces)
-            .map { (pid, list) ->
+            .map { locations ->
+                val (pid, list) = locations.minBy { (_, l) -> l.first().distanceKm ?: Double.MAX_VALUE }
                 val first = list.first()
                 PlaceSuggestion(places[pid], first.dish.placeName, first.distanceKm, list.take(perPlace))
             }
+
+    private fun chainKey(name: String) = name.lowercase().replace(Regex("[^a-z0-9]"), "")
 }
