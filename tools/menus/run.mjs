@@ -247,7 +247,8 @@ async function main() {
         items = (all.length > 200 && (await gemini(all))) || [];
         if (items.length < 5) {
           const seen = new Set();
-          items = texts.flatMap(parseMenuText).filter((it) => !seen.has(it.name.toLowerCase()) && seen.add(it.name.toLowerCase()));
+          const parsed = texts.flatMap(parseMenuText).filter((it) => !seen.has(it.name.toLowerCase()) && seen.add(it.name.toLowerCase()));
+          if (parsed.length > items.length) items = parsed; // keep Gemini's few over the parser's none
         }
         p.menuSource = items.length ? sources.find((s) => /menu/i.test(s)) ?? sources[0] : "";
       }

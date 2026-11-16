@@ -72,6 +72,8 @@ const osmAll = (await overpassTown()).filter((e) => e.tags?.name).map((e) => ({
 const osm = osmAll.filter(inCT);
 log(`${town}: ${osm.length} places in OpenStreetMap`);
 
+// Places the automatic job already knows by hand (extra-places.json) keep that job's id.
+const EXTRA = JSON.parse(fs.readFileSync(new URL("./extra-places.json", import.meta.url)));
 const places = [], dishes = [], retire = [];
 let matched = 0, geocoded = 0, missed = 0;
 for (const p of byPlace.values()) {
@@ -85,7 +87,9 @@ for (const p of byPlace.values()) {
   const oldCands = osmAll.filter((o) => o.n && (o.n === n || o.n.includes(n) || n.includes(o.n)));
   const oldHit = oldCands.find((o) => num && o.street.trim().startsWith(num)) ?? (oldCands.length === 1 ? oldCands[0] : null);
   if (oldHit && !inCT(oldHit)) retire.push(oldHit.id);
-  if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
+  const extra = EXTRA.find((x) => norm(x.name) === n);
+  if (extra && !hit) { matched++; place = { id: `x-${slug(extra.name)}`, lat: extra.lat, lng: extra.lng, website: extra.website ?? "" }; }
+  else if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
   else {
     // Suites trip the geocoder ("1540 Pleasant Valley Rd Ste E"), so try without them too.
     const bare = p.address.replace(/,?\s*(\b(ste|suite|unit|space)\b\.?|#)\s*#?\s*[\w-]+/i, "");
