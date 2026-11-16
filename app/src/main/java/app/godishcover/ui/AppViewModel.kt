@@ -195,6 +195,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun toggleLike(item: FeedItem) = launchQuiet { repo.toggleLike(item) }
+    fun loadComments(item: FeedItem, done: (List<app.godishcover.data.Comment>) -> Unit) = launchQuiet { done(repo.comments(item)) }
+    fun addComment(item: FeedItem, text: String, done: (app.godishcover.data.Comment) -> Unit) = launchBusy { done(repo.addComment(item, text)) }
+    fun deleteComment(item: FeedItem, c: app.godishcover.data.Comment, done: () -> Unit) = launchBusy { repo.deleteComment(item, c); done() }
+    fun myUserId(): String = user.value?.id ?: ""
     fun deleteFeedItem(item: FeedItem) = launchBusy { repo.deleteFeedItem(item) }
     fun reportFeedItem(item: FeedItem, done: () -> Unit) = launchBusy { repo.reportFeedItem(item, "user report"); done() }
     fun toggleSaved(placeId: String) = launchQuiet { repo.toggleSaved(placeId); syncAlerts() }

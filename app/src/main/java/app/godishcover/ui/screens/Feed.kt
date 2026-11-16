@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -276,6 +277,8 @@ private fun FeedCard(item: FeedItem, vm: AppViewModel, nav: NavHostController, l
     val ctx = LocalContext.current
     var menu by remember { mutableStateOf(false) }
     var reported by remember { mutableStateOf(false) }
+    var showComments by remember { mutableStateOf(false) }
+    if (showComments) CommentsSheet(item, vm, mine) { showComments = false }
     val open = {
         if (item.dishId.isNotBlank() && item.type == FeedType.REVIEW) nav.navigate(Routes.dish(item.dishId))
         else if (item.placeId.isNotBlank()) nav.navigate(Routes.place(item.placeId))
@@ -352,6 +355,10 @@ private fun FeedCard(item: FeedItem, vm: AppViewModel, nav: NavHostController, l
                     )
                 }
                 Note(if (item.likeCount > 0) "${item.likeCount}" else "")
+                IconButton(onClick = { showComments = true }) {
+                    Icon(ChatBubble, contentDescription = "Comments", tint = Dc.Muted)
+                }
+                Note(if (item.commentCount > 0) "${item.commentCount}" else "")
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { shareText(ctx, shareLine(item)) }) {
                     Icon(Icons.Filled.Share, contentDescription = "Share", tint = Dc.Muted)
@@ -439,4 +446,77 @@ fun PostScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
             Spacer(Modifier.height(8.dp))
         }
     }
+}
+
+/** Comments under a post: read them, add one, and remove your own (or any on your post). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun CommentsSheet(item: FeedItem, vm: AppViewModel, myPost: Boolean, onDismiss: () -> Unit) {
+    var list by remember { mutableStateOf<List<app.godishcover.data.Comment>?>(null) }
+    var draft by remember { mutableStateOf("") }
+    val me = vm.myUserId()
+    LaunchedEffect(item.id) { vm.loadComments(item) { list = it } }
+    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Comments", style = MaterialTheme.typography.titleLarge)
+            val l = list
+            when {
+                l == null -> Note("Loading…")
+                l.isEmpty() -> Note("No comments yet. Say something nice.")
+                else -> androidx.compose.foundation.lazy.LazyColumn(
+                    Modifier.fillMaxWidth().heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(l, key = { it.id }) { c ->
+                        Row(verticalAlignment = Alignment.Top) {
+                            Thumb(c.userName.ifBlank { "D" }, 30, round = true)
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(c.userName.ifBlank { "Someone" }, style = MaterialTheme.typography.titleSmall)
+                                Text(c.text, style = MaterialTheme.typography.bodyMedium)
+                                Note(timeAgo(c.createdAt))
+                            }
+                            if (c.userId == me || myPost) {
+                                androidx.compose.material3.TextButton(onClick = {
+                                    vm.deleteComment(item, c) { list = list.orEmpty().filter { it.id != c.id } }
+                                }) { Text("Delete", color = Dc.Muted) }
+                            }
+                        }
+                    }
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.OutlinedTextField(
+                    draft, { draft = it.take(300) },
+                    placeholder = { Text("Add a comment") },
+                    modifier = Modifier.weight(1f),
+                    maxLines = 4,
+                )
+                Spacer(Modifier.width(8.dp))
+                androidx.compose.material3.TextButton(
+                    enabled = draft.isNotBlank(),
+                    onClick = {
+                        val text = draft
+                        draft = ""
+                        vm.addComment(item, text) { c -> list = list.orEmpty() + c }
+                    },
+                ) { Text("Post", color = Dc.Wine) }
+            }
+        }
+    }
+}
+
+/** Outlined speech bubble (the core icon set has none). */
+private val ChatBubble: androidx.compose.ui.graphics.vector.ImageVector by lazy {
+    androidx.compose.ui.graphics.vector.ImageVector.Builder("Chat", 24.dp, 24.dp, 24f, 24f).apply {
+        addPath(
+            androidx.compose.ui.graphics.vector.PathBuilder().apply {
+                moveTo(20f, 2f); horizontalLineTo(4f); curveTo(2.9f, 2f, 2f, 2.9f, 2f, 4f); verticalLineTo(22f)
+                lineTo(6f, 18f); horizontalLineTo(20f); curveTo(21.1f, 18f, 22f, 17.1f, 22f, 16f); verticalLineTo(4f)
+                curveTo(22f, 2.9f, 21.1f, 2f, 20f, 2f); close()
+                moveTo(20f, 16f); horizontalLineTo(5.17f); lineTo(4f, 17.17f); verticalLineTo(4f); horizontalLineTo(20f); close()
+            }.nodes,
+            fill = androidx.compose.ui.graphics.SolidColor(androidx.compose.ui.graphics.Color.Black),
+        )
+    }.build()
 }

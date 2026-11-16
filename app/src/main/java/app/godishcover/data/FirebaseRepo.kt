@@ -385,6 +385,35 @@ class FirebaseRepo : Repo {
         }
     }
 
+    override suspend fun comments(item: FeedItem): List<Comment> {
+        val blocked = profile.value?.blocked.orEmpty()
+        return db.collection("feed").document(item.id).collection("comments")
+            .orderBy("createdAt").limit(200).get().await()
+            .documents.mapNotNull { d -> d.toObject(Comment::class.java)?.also { it.id = d.id } }
+            .filter { it.userId !in blocked }
+    }
+
+    override suspend fun addComment(item: FeedItem, text: String): Comment {
+        val post = db.collection("feed").document(item.id)
+        val ref = post.collection("comments").document()
+        val c = Comment(id = ref.id, userId = uid(), userName = myName(), text = text.trim().take(300), createdAt = System.currentTimeMillis())
+        db.batch()
+            .set(ref, mapOf("userId" to c.userId, "userName" to c.userName, "text" to c.text, "createdAt" to c.createdAt))
+            .update(post, "commentCount", FieldValue.increment(1))
+            .commit().await()
+        feed.value = feed.value.map { if (it.id == item.id) it.copy(commentCount = it.commentCount + 1) else it }
+        return c
+    }
+
+    override suspend fun deleteComment(item: FeedItem, comment: Comment) {
+        val post = db.collection("feed").document(item.id)
+        db.batch()
+            .delete(post.collection("comments").document(comment.id))
+            .update(post, "commentCount", FieldValue.increment(-1))
+            .commit().await()
+        feed.value = feed.value.map { if (it.id == item.id) it.copy(commentCount = (it.commentCount - 1).coerceAtLeast(0)) else it }
+    }
+
     override suspend fun deleteFeedItem(item: FeedItem) {
         db.collection("feed").document(item.id).delete().await()
         if (item.photoUrl.isNotEmpty()) runCatching { Firebase.storage.getReferenceFromUrl(item.photoUrl).delete().await() }

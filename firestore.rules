@@ -94,16 +94,32 @@ service cloud.firestore {
         && isStr(request.resource.data.text, 500)
         && isStr(request.resource.data.placeName, 80)
         && request.resource.data.likeCount == 0;
-      // Likes move the counter one step at a time.
-      allow update: if signedIn()
-        && changed().hasOnly(['likeCount'])
-        && request.resource.data.likeCount - resource.data.likeCount <= 1
-        && request.resource.data.likeCount - resource.data.likeCount >= -1
-        && request.resource.data.likeCount >= 0;
+      // Likes and comment counts move one step at a time.
+      allow update: if signedIn() && (
+        (changed().hasOnly(['likeCount'])
+          && request.resource.data.likeCount - resource.data.likeCount <= 1
+          && request.resource.data.likeCount - resource.data.likeCount >= -1
+          && request.resource.data.likeCount >= 0)
+        || (changed().hasOnly(['commentCount'])
+          && request.resource.data.commentCount - resource.data.get('commentCount', 0) <= 1
+          && request.resource.data.commentCount - resource.data.get('commentCount', 0) >= -1
+          && request.resource.data.commentCount >= 0));
       allow delete: if signedIn() && resource.data.userId == me();
+
+      match /comments/{cid} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['userId', 'userName', 'text', 'createdAt'])
+          && request.resource.data.userId == me()
+          && isStr(request.resource.data.text, 300) && request.resource.data.text.size() > 0
+          && isStr(request.resource.data.userName, 60)
+          && request.resource.data.createdAt is int;
+        // The commenter or the post's owner can remove a comment.
+        allow delete: if signedIn() && (resource.data.userId == me()
+          || get(/databases/$(database)/documents/feed/$(id)).data.userId == me());
+      }
     }
 
-    // App settings published by Marcos (newest version and its download link).
     // A request to look up menus for one ~5 km area (geohash 5). Created once by a visitor, then run by the server.
     match /areas/{cell} {
       allow read: if signedIn();
@@ -124,6 +140,7 @@ service cloud.firestore {
       }
     }
 
+    // App settings published by Marcos (newest version and its download link).
     match /config/{doc} {
       allow read: if signedIn();
     }

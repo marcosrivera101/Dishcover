@@ -114,6 +114,16 @@ data class FeedItem(
     var text: String = "",
     var photoUrl: String = "",
     var likeCount: Long = 0,
+    var commentCount: Long = 0,
+)
+
+/** A comment under a feed post, stored at feed/{postId}/comments/{id}. */
+data class Comment(
+    var id: String = "",
+    var userId: String = "",
+    var userName: String = "",
+    var text: String = "",
+    var createdAt: Long = 0,
 )
 
 object FeedType {

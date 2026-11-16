@@ -194,6 +194,23 @@ class DemoRepo(private val context: Context? = null) : Repo {
         feed.value = feed.value.map { if (it.id == item.id) it.copy(likeCount = (it.likeCount + if (liked) -1 else 1).coerceAtLeast(0)) else it }
     }
 
+    private val demoComments = mutableMapOf<String, MutableList<Comment>>()
+
+    override suspend fun comments(item: FeedItem): List<Comment> = demoComments[item.id].orEmpty().toList()
+
+    override suspend fun addComment(item: FeedItem, text: String): Comment {
+        val c = Comment(id = "c" + System.nanoTime(), userId = user.value?.id ?: "demo", userName = myName().ifBlank { "You" },
+            text = text.trim().take(300), createdAt = System.currentTimeMillis())
+        demoComments.getOrPut(item.id) { mutableListOf() }.add(c)
+        feed.value = feed.value.map { if (it.id == item.id) it.copy(commentCount = it.commentCount + 1) else it }
+        return c
+    }
+
+    override suspend fun deleteComment(item: FeedItem, comment: Comment) {
+        demoComments[item.id]?.removeAll { it.id == comment.id }
+        feed.value = feed.value.map { if (it.id == item.id) it.copy(commentCount = (it.commentCount - 1).coerceAtLeast(0)) else it }
+    }
+
     override suspend fun deleteFeedItem(item: FeedItem) {
         feed.value = feed.value.filter { it.id != item.id }
     }

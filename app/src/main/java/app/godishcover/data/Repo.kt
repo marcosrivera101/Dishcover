@@ -54,6 +54,9 @@ interface Repo {
     /** Publishes a post or shared review; [photoJpeg] is uploaded first when given. */
     suspend fun post(item: FeedItem, photoJpeg: ByteArray?)
     suspend fun toggleLike(item: FeedItem)
+    suspend fun comments(item: FeedItem): List<Comment>
+    suspend fun addComment(item: FeedItem, text: String): Comment
+    suspend fun deleteComment(item: FeedItem, comment: Comment)
     suspend fun deleteFeedItem(item: FeedItem)
     suspend fun reportFeedItem(item: FeedItem, reason: String)
 
