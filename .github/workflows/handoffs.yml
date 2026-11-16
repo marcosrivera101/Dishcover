@@ -7,6 +7,10 @@ on:
     branches: [main]
     paths: ["tools/menus/handoffs/**", "tools/menus/import-sheet.mjs", "tools/menus/stray-places.mjs"]
   workflow_dispatch:
+    inputs:
+      seed:
+        description: "Also write this seed file as a place's whole menu (e.g. fixes/first-and-last.json)"
+        default: ""
 
 permissions:
   contents: read
@@ -50,6 +54,7 @@ jobs:
             MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
             echo "::endgroup::"
           done
+          if [ -n "${{ github.event.inputs.seed }}" ]; then MAX_POSTS=0 node sync-firestore.mjs "${{ github.event.inputs.seed }}"; fi
           shopt -s nullglob; node stray-places.mjs hand-*.json
       - name: Clean up
         if: always()
