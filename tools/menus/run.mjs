@@ -117,6 +117,43 @@ async function pageText(page) {
   return text;
 }
 
+// Menus without prices are often laid out as a heading per dish with its description under it
+// (WordPress/Elementor sites). Read those straight from the page's headings.
+async function headingItems(page) {
+  try {
+    return await page.evaluate(() => {
+      const seq = [];
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const el = node.parentElement;
+        if (!el || /^(SCRIPT|STYLE|NOSCRIPT|BUTTON)$/.test(el.tagName) || el.closest("nav,header,footer")) continue;
+        const t = node.textContent.replace(/\s+/g, " ").trim();
+        if (!t) continue;
+        const h = el.closest("h1,h2,h3,h4,h5,h6");
+        const last = seq[seq.length - 1];
+        if (h) {
+          if (last && last.h === h) last.name += " " + t;
+          else seq.push({ h, level: Number(h.tagName[1]), name: t, description: "" });
+        } else if (last && last.description.length < 240) last.description = (last.description + " " + t).trim();
+      }
+      const counts = {};
+      seq.forEach((x) => (counts[x.level] = (counts[x.level] ?? 0) + 1));
+      const level = Number(Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0]);
+      if (!level || counts[level] < 8) return [];
+      const out = [];
+      let section = "";
+      for (const x of seq) {
+        if (x.level < level) { section = x.name; continue; }
+        if (x.level !== level) continue;
+        const m = x.description.match(/^\$?\s?(\d{1,3}(?:\.\d{2})?)\b\s*(.*)$/);
+        out.push({ name: x.name.replace(/^[*\s]+/, ""), description: m ? m[2] : x.description, price: m ? "$" + m[1] : "", section });
+      }
+      return out;
+    });
+  } catch { return []; }
+}
+
 async function scrollToEnd(page) {
   try {
     await page.evaluate(async () => {
@@ -142,11 +179,13 @@ async function readSite(ctx, url) {
   const texts = [];
   const visited = new Set();
   const sources = [];
+  const headed = [];
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(2500);
     await scrollToEnd(page);
     texts.push(await pageText(page));
+    headed.push(...(await headingItems(page)));
     sources.push(page.url());
     visited.add(page.url());
     const home = new URL(page.url());
@@ -178,6 +217,7 @@ async function readSite(ctx, url) {
         await page.waitForTimeout(2500);
         await scrollToEnd(page);
         texts.push(await pageText(page));
+        headed.push(...(await headingItems(page)));
         sources.push(href);
       } catch (e) {
         log(`  ${href}: ${e.message.split("\n")[0]}`);
@@ -188,7 +228,7 @@ async function readSite(ctx, url) {
   } finally {
     await page.close();
   }
-  return { texts, sources };
+  return { texts, sources, headed };
 }
 
 // ---------- Gemini (optional) ----------
@@ -243,13 +283,16 @@ async function main() {
         p.menuSource = "chain";
         p.chain = chain;
       } else if (p.website && !SKIP_SITES.test(p.website)) {
-        const { texts, sources } = await readSite(ctx, p.website);
+        const { texts, sources, headed } = await readSite(ctx, p.website);
         const all = texts.join("\n");
         items = (all.length > 200 && (await gemini(all))) || [];
         if (items.length < 5) {
           const seen = new Set();
           const parsed = texts.flatMap(parseMenuText).filter((it) => !seen.has(it.name.toLowerCase()) && seen.add(it.name.toLowerCase()));
           if (parsed.length > items.length) items = parsed; // keep Gemini's few over the parser's none
+          const seenH = new Set();
+          const byHeading = headed.filter((it) => !seenH.has(it.name.toLowerCase()) && seenH.add(it.name.toLowerCase()));
+          if (byHeading.length > Math.max(items.length, 7)) items = byHeading;
         }
         p.menuSource = items.length ? sources.find((s) => /menu/i.test(s)) ?? sources[0] : "";
       }
