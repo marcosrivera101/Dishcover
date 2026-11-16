@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: area-menus
+  group: hand-menus
   cancel-in-progress: false
 
 jobs:
@@ -50,12 +50,12 @@ jobs:
           for f in $files; do
             town=$(basename "$f" .jsonl)
             echo "::group::$town"
-            node import-sheet.mjs "$f" "hand-$town.json"
-            MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
+            if node import-sheet.mjs "$f" "hand-$town.json"; then MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"; else echo "::warning::$town not loaded"; rm -f "hand-$town.json"; failed=1; fi
             echo "::endgroup::"
           done
           if [ -n "${{ github.event.inputs.seed }}" ]; then MAX_POSTS=0 node sync-firestore.mjs "${{ github.event.inputs.seed }}"; fi
           shopt -s nullglob; node stray-places.mjs hand-*.json
+          exit ${failed:-0}
       - name: Clean up
         if: always()
         run: rm -f sa.json
