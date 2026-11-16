@@ -11,7 +11,7 @@ import admin from "firebase-admin";
 import fs from "node:fs";
 
 // Keeps the menu reader's cost small: at most this many areas a day.
-const DAILY_MAX = 24;
+const DAILY_MAX = 48;
 const B32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 
 function bounds(cell) {

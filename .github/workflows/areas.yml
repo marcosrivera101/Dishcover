@@ -2,7 +2,7 @@ name: Area menus
 
 # When someone opens the app somewhere new, the app asks for menus there (areas/{cell} in
 # Firestore). This picks up waiting areas, reads the restaurants' menus from their own
-# websites, and writes the dishes into the live app. At most 24 areas a day.
+# websites, and writes the dishes into the live app. At most 48 areas a day.
 on:
   schedule:
     - cron: "*/30 * * * *"
@@ -46,7 +46,7 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
           npx playwright install --with-deps chromium
-      - name: Read menus (up to 3 areas)
+      - name: Read menus (up to 5 areas)
         if: steps.next.outputs.area != ''
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -54,7 +54,7 @@ jobs:
           FIRST: ${{ steps.next.outputs.area }}
         run: |
           area="$FIRST"
-          for i in 1 2 3; do
+          for i in 1 2 3 4 5; do
             [ -z "$area" ] && break
             cell="${area%% *}"; bbox="${area#* }"
             echo "::group::Area $cell ($bbox)"
