@@ -5,7 +5,7 @@ name: Hand-gathered menus
 on:
   push:
     branches: [main]
-    paths: ["tools/menus/handoffs/**", "tools/menus/import-sheet.mjs"]
+    paths: ["tools/menus/handoffs/**", "tools/menus/import-sheet.mjs", "tools/menus/stray-places.mjs"]
   workflow_dispatch:
 
 permissions:
@@ -50,6 +50,7 @@ jobs:
             MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
             echo "::endgroup::"
           done
+          node stray-places.mjs
       - name: Clean up
         if: always()
         run: rm -f sa.json

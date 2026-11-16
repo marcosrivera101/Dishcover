@@ -61,10 +61,12 @@ async function geocode(address) {
   } catch { return null; }
 }
 
+// The town search also finds same-named towns elsewhere (Manchester, England), so keep Connecticut only.
+const inCT = (o) => o.lat > 40.9 && o.lat < 42.1 && o.lng > -73.8 && o.lng < -71.7;
 const osm = (await overpassTown()).filter((e) => e.tags?.name).map((e) => ({
   id: `osm-${e.type[0]}${e.id}`, n: norm(e.tags.name), lat: e.lat ?? e.center?.lat, lng: e.lon ?? e.center?.lon,
   street: (e.tags["addr:housenumber"] ?? "") + " " + (e.tags["addr:street"] ?? ""), website: e.tags.website ?? "",
-}));
+})).filter(inCT);
 log(`${town}: ${osm.length} places in OpenStreetMap`);
 
 const places = [], dishes = [], retire = [];
