@@ -52,6 +52,7 @@ async function main() {
     else ops.push((b) => b.set(ref, { ...fields, createdBy: BOT.id, createdByName: "Dishcover", createdAt: now, ratingSum: 0, ratingCount: 0, coordsCachedAt: 0 }));
   }
   let added = 0;
+  const newByPlace = new Map(); // placeId -> new dish ids this run
   for (const d of seed.dishes) {
     if (existingDishes.has(d.id)) {
       // Keep ratings; refresh only what the menu reader decides.
@@ -61,6 +62,7 @@ async function main() {
     const p = placeById.get(d.placeId);
     if (!p) continue;
     added++;
+    (newByPlace.get(d.placeId) ?? newByPlace.set(d.placeId, []).get(d.placeId)).push(d.id);
     ops.push((b) =>
       b.set(db.collection("dishes").doc(d.id), {
         placeId: d.placeId, placeName: p.name, gh4: geohash(p.lat, p.lng), name: d.name.slice(0, 80), description: d.description ?? "",
@@ -73,8 +75,9 @@ async function main() {
   // Feed posts: one per place whose menu changed.
   const dishName = new Map(seed.dishes.map((d) => [d.id, d.name]));
   const firstRun = existingDishes.size === 0;
-  const posts = ((firstRun ? null : changes) ?? seed.places.filter((p) => p.dishCount > 0).map((p) => ({
-    placeId: p.id, placeName: p.name, newPlace: true, added: seed.dishes.filter((d) => d.placeId === p.id).map((d) => d.id),
+  // Without a changes file, post only for places that got dishes they didn't have, so a rerun stays quiet.
+  const posts = ((firstRun ? null : changes) ?? seed.places.filter((p) => newByPlace.has(p.id)).map((p) => ({
+    placeId: p.id, placeName: p.name, newPlace: !existingPlaces.has(p.id), added: newByPlace.get(p.id),
   }))).slice(0, MAX_POSTS);
   posts.forEach((c, i) => {
     const p = placeById.get(c.placeId);
