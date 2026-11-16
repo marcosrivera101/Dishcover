@@ -211,6 +211,7 @@ async function gemini(text) {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
     });
     const j = await r.json();
+    if (j.error || !j.candidates?.[0]?.content) { log(`  gemini: ${j.error?.message ?? j.candidates?.[0]?.finishReason ?? j.promptFeedback?.blockReason ?? "no answer"}`); return null; }
     const items = JSON.parse(j.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]");
     return items.filter((i) => i.name).map((i) => ({ name: i.name.trim(), description: (i.description ?? "").trim().slice(0, 240), price: (i.price ?? "").trim(), section: i.section ?? "" }));
   } catch (e) {
