@@ -101,7 +101,7 @@ for (const p of byPlace.values()) {
   });
   const seen = new Set();
   for (const r of p.rows) {
-    const c = cleanItem({ name: String(r[C.d]).trim(), description: String(r[C.desc] ?? "").trim(), price: String(r[C.p] ?? "").trim(), section: String(r[C.cat] ?? "").trim() });
+    const c = cleanItem({ name: String(r[C.d]).trim(), description: String(r[C.desc] ?? "").replace(/\b(view options|learn more|regular price|view product|ayce item, no individual price|buffet item, no individual price)\b/gi, "").replace(/^\s*from\s*$/i, "").replace(/\s+/g, " ").trim(), price: String(r[C.p] ?? "").trim(), section: String(r[C.cat] ?? "").trim() });
     if (!c) continue;
     const price = c.price && /\d/.test(c.price) && Number(String(c.price).replace(/[^0-9.]/g, "")) > 0 ? `$${Number(String(c.price).replace(/[^0-9.]/g, "")).toFixed(2)}` : "";
     const id = `${place.id}-${slug(c.name)}`;
