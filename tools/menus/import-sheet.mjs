@@ -41,14 +41,15 @@ async function overpassTown() {
   const q = `[out:json][timeout:90];area["name"="${town}"]["boundary"="administrative"]["is_in:state_code"!="NH"]->.t;
 (nwr["amenity"~"^(restaurant|fast_food|cafe|ice_cream|food_court|pub|bar)$"]["name"](area.t);
  nwr["shop"~"^(bakery|deli|pastry|coffee)$"]["name"](area.t););out center tags;`;
-  for (const host of ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]) {
+  for (const host of ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter"]) {
     try {
       const r = await fetch(host, { method: "POST", body: new URLSearchParams({ data: q }), headers: UA });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return (await r.json()).elements;
-    } catch (e) { log(`overpass ${host}: ${e.message}`); }
+    } catch (e) { log(`overpass ${host}: ${e.message}`); await new Promise((r) => setTimeout(r, 20000)); }
   }
-  return [];
+  // Without OpenStreetMap the places would get new ids and double up with the automatic job's.
+  throw new Error("OpenStreetMap is unreachable; try again later");
 }
 
 async function geocode(address) {
