@@ -11,6 +11,9 @@ on:
       seed:
         description: "Queue every area of Connecticut first (yes/no)"
         default: "no"
+      requeue:
+        description: "Read every finished area again (yes/no)"
+        default: "no"
 
 permissions:
   contents: read
@@ -40,6 +43,7 @@ jobs:
           echo "$SA" > sa.json
           npm install --no-audit --no-fund
           if [ "${{ github.event.inputs.seed }}" = "yes" ]; then GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs seed-ct; fi
+          if [ "${{ github.event.inputs.requeue }}" = "yes" ]; then GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs requeue; fi
           echo "area=$(GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs next)" >> "$GITHUB_OUTPUT"
       - name: Install the menu reader
         if: steps.next.outputs.area != ''

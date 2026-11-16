@@ -100,6 +100,11 @@ if (cmd === "next") {
     added++;
   }
   console.log(`${els.length} places in CT, ${cells.length} areas with 4+, ${added} queued`);
+} else if (cmd === "requeue") {
+  // The menu reader got better: read every finished area again, after the ones still waiting.
+  const done = await db.collection("areas").where("status", "in", ["done", "failed"]).get();
+  for (const d of done.docs) await d.ref.update({ status: "waiting", requestedAt: now });
+  console.log(`${done.size} areas queued again`);
 } else if (cmd === "failed") {
   await db.collection("areas").doc(cell).update({ status: "failed", doneAt: now });
 } else {
