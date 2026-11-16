@@ -50,7 +50,7 @@ jobs:
             MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
             echo "::endgroup::"
           done
-          node stray-places.mjs hand-*.json
+          node stray-places.mjs
       - name: Clean up
         if: always()
         run: rm -f sa.json
