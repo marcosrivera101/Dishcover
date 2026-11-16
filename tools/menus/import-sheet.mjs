@@ -93,7 +93,10 @@ for (const p of byPlace.values()) {
   else {
     // Suites trip the geocoder ("1540 Pleasant Valley Rd Ste E"), so try without them too.
     const bare = p.address.replace(/,?\s*(\b(ste|suite|unit|space)\b\.?|#)\s*#?\s*[\w-]+/i, "");
-    const g = p.address && ((await geocode(p.address)) ?? (bare !== p.address ? await geocode(bare) : null));
+    // Last try: number and street up to its suffix ("265 Ellington Rd e530" -> "265 Ellington Rd"), plus town.
+    const street = p.address.split(",")[0].match(/^.*?\b(rd|road|ave|avenue|st|street|blvd|dr|drive|tpke|turnpike|ln|lane|way|pl|place|ct|hwy|pike|plz|plaza|sq|pkwy)\b\.?/i)?.[0];
+    const short = street ? `${street}, ${town}, CT` : null;
+    const g = p.address && ((await geocode(p.address)) ?? (bare !== p.address ? await geocode(bare) : null) ?? (short && short !== bare ? await geocode(short) : null));
     if (!g) { missed++; log(`no location for ${p.name} (${p.address})`); continue; }
     geocoded++;
     place = { id: `x-${slug(p.name)}-${slug(town)}`, ...g, website: "" };
