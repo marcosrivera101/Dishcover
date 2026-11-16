@@ -97,6 +97,20 @@ async function main() {
 
   await commitAll(ops);
 
+  // A town sheet is the whole menu: drop the place's older dishes it no longer lists, unless rated.
+  let dropped = 0;
+  if (seed.replaceMenus) {
+    const keep = new Set(seed.dishes.map((d) => d.id));
+    const drop = [];
+    for (const p of seed.places) {
+      const ds = await db.collection("dishes").where("placeId", "==", p.id).get();
+      for (const d of ds.docs) if (!keep.has(d.id) && d.get("createdBy") === BOT.id && (d.get("ratingCount") ?? 0) === 0) drop.push(d.ref);
+    }
+    await commitAll(drop.map((r) => (b) => b.delete(r)));
+    dropped = drop.length;
+  }
+  if (dropped) console.log(`Dropped ${dropped} dishes no longer on the menus`);
+
   // A hand-gathered place first loaded without its OpenStreetMap match got an "x-" id; once it is
   // matched, drop that stand-in (and its dishes) unless someone has already rated it.
   let retired = 0;

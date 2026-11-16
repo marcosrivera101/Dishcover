@@ -34,8 +34,8 @@ for (const row of lines) {
 }
 log(`${lines.length} rows, ${byPlace.size} restaurants`);
 
-// Town from the first address ("..., Manchester, CT 06042").
-const town = [...byPlace.values()][0]?.address.match(/,\s*([^,]+),\s*CT\b/)?.[1]?.trim() ?? "";
+// Town from the file name (handoffs/west-hartford.jsonl -> West Hartford); addresses can name a village.
+const town = inp.split("/").pop().replace(/\.jsonl$/, "").split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
 async function overpassTown() {
   const q = `[out:json][timeout:90];area["name"="${town}"]["boundary"="administrative"]["is_in:state_code"!="NH"]->.t;
@@ -85,12 +85,14 @@ for (const p of byPlace.values()) {
   if (oldHit && !inCT(oldHit)) retire.push(oldHit.id);
   if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
   else {
-    const g = p.address && (await geocode(p.address));
+    // Suites trip the geocoder ("1540 Pleasant Valley Rd Ste E"), so try without them too.
+    const bare = p.address.replace(/,?\s*(\b(ste|suite|unit)\b\.?|#)\s*[\w-]+/i, "");
+    const g = p.address && ((await geocode(p.address)) ?? (bare !== p.address ? await geocode(bare) : null));
     if (!g) { missed++; log(`no location for ${p.name} (${p.address})`); continue; }
     geocoded++;
     place = { id: `x-${slug(p.name)}-${slug(town)}`, ...g, website: "" };
   }
-  const own = p.rows.map((r) => String(r[C.src] ?? "")).find((s) => /^https?:/.test(s) && !/doordash|ubereats|grubhub|allmenus|postmates|seamless|menupix|yelp/.test(s));
+  const own = p.rows.map((r) => String(r[C.src] ?? "")).find((s) => /^https?:/.test(s) && !/doordash|ubereats|grubhub|allmenus|postmates|seamless|menupix|yelp|slicelife|toasttab|order\./.test(s));
   places.push({
     id: place.id, name: p.name, address: p.address.replace(/\s+\d{5}(-\d{4})?$/, ""), lat: place.lat, lng: place.lng,
     cuisine: p.cuisine.toLowerCase().replace(/\s*\/\s*/g, ";"), website: place.website || own || "", menuSource: "hand-gathered",
@@ -111,5 +113,5 @@ for (const p of byPlace.values()) {
   }
 }
 for (const p of places) p.dishCount = dishes.filter((d) => d.placeId === p.id).length;
-fs.writeFileSync(out, JSON.stringify({ area: `${town}, CT (hand-gathered)`, generatedAt: new Date().toISOString(), places, dishes, retire }));
+fs.writeFileSync(out, JSON.stringify({ area: `${town}, CT (hand-gathered)`, generatedAt: new Date().toISOString(), places, dishes, retire, replaceMenus: true }));
 log(`wrote ${out}: ${places.length} places (${matched} matched, ${geocoded} by address, ${missed} skipped), ${dishes.length} dishes`);
