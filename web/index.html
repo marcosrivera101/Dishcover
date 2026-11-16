@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dishcover</title>
+  <meta name="description" content="Find the best dishes near you, rated dish by dish by people who ate them.">
+  <meta name="theme-color" content="#7B1E2E">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Dishcover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a href="#/" class="brand" aria-label="Dishcover home">
+      <img class="wm wm-dark" src="wordmark.png" alt="Dishcover">
+      <img class="wm wm-light" src="wordmark-light.png" alt="Dishcover">
+    </a>
+    <button id="signout" class="ghost" hidden>Sign out</button>
+  </header>
+  <main id="view" aria-live="polite"></main>
+  <nav class="tabs" id="tabs" hidden>
+    <a href="#/" data-tab="near">Restaurants</a>
+    <a href="#/dishes" data-tab="dishes">Dishes</a>
+    <a href="#/feed" data-tab="feed">Feed</a>
+  </nav>
+  <div id="toast" role="status"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

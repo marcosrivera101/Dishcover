@@ -89,6 +89,30 @@ jobs:
             "${{ steps.version.outputs.code }}" "${{ steps.version.outputs.name }}")
           rm -f "$RUNNER_TEMP/sa.json"
 
+  website:
+    # Dishcover on the web (for iPhone users), on Firebase Hosting: https://godishcover.web.app
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Publish the website
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then echo "No service account secret."; exit 0; fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          FB="npx --yes firebase-tools@13 --project godishcover --non-interactive"
+          APP=$($FB apps:list WEB --json | jq -r '.result[0].appId // empty')
+          if [ -z "$APP" ]; then APP=$($FB apps:create WEB "Dishcover web" --json | jq -r '.result.appId'); fi
+          $FB apps:sdkconfig WEB "$APP" --json | jq '.result.sdkConfig' > "$RUNNER_TEMP/cfg.json"
+          echo "export const firebaseConfig = $(cat "$RUNNER_TEMP/cfg.json");" > web/firebase-config.js
+          $FB deploy --only hosting --force
+          rm -f "$RUNNER_TEMP/sa.json"
+
   functions:
     runs-on: ubuntu-latest
     defaults:

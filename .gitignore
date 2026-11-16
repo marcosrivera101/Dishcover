@@ -13,3 +13,4 @@ app/google-services.json
 functions/node_modules/
 functions/lib/
 !app/debug.keystore
+web/firebase-config.js
