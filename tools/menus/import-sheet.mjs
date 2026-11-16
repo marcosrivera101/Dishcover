@@ -86,7 +86,7 @@ for (const p of byPlace.values()) {
   if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
   else {
     // Suites trip the geocoder ("1540 Pleasant Valley Rd Ste E"), so try without them too.
-    const bare = p.address.replace(/,?\s*(\b(ste|suite|unit)\b\.?|#)\s*[\w-]+/i, "");
+    const bare = p.address.replace(/,?\s*(\b(ste|suite|unit|space)\b\.?|#)\s*#?\s*[\w-]+/i, "");
     const g = p.address && ((await geocode(p.address)) ?? (bare !== p.address ? await geocode(bare) : null));
     if (!g) { missed++; log(`no location for ${p.name} (${p.address})`); continue; }
     geocoded++;
