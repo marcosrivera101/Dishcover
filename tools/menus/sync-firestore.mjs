@@ -46,7 +46,8 @@ async function main() {
 
   for (const p of seed.places) {
     const gh4 = geohash(p.lat, p.lng);
-    const fields = { name: p.name.slice(0, 60), address: p.address ?? "", lat: p.lat, lng: p.lng, gh4, cuisine: p.cuisine ?? "", website: p.website ?? "" };
+    const fields = { name: p.name.slice(0, 60), address: p.address ?? "", lat: p.lat, lng: p.lng, gh4, cuisine: p.cuisine ?? "", website: p.website ?? "",
+      dishCount: seed.dishes.filter((d) => d.placeId === p.id).length };
     const ref = db.collection("places").doc(p.id);
     if (existingPlaces.has(p.id)) ops.push((b) => b.set(ref, fields, { merge: true }));
     else ops.push((b) => b.set(ref, { ...fields, createdBy: BOT.id, createdByName: "Dishcover", createdAt: now, ratingSum: 0, ratingCount: 0, coordsCachedAt: 0 }));

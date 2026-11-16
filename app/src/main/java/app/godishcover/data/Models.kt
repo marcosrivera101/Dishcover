@@ -22,6 +22,8 @@ data class Place(
     /** OpenStreetMap-style cuisine list, e.g. "pizza;italian". Set by the menu check. */
     var cuisine: String = "",
     var website: String = "",
+    /** How many dishes the menu check found, so the app loads menus from places that have one. */
+    var dishCount: Long = 0,
 )
 
 val Place.average: Double get() = if (ratingCount == 0L) 0.0 else ratingSum.toDouble() / ratingCount

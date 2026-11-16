@@ -84,17 +84,23 @@ function locate() {
 async function load() {
   S.here = await locate();
   const cells = cellsAround(S.here, 16);
-  const ps = [], ds = [];
+  const ps = [], ds = new Map();
   for (let i = 0; i < cells.length; i += 30) {
-    const chunk = cells.slice(i, i + 30);
-    const [a, b] = await Promise.all([
-      getDocs(query(collection(db, "places"), where("gh4", "in", chunk))),
-      getDocs(query(collection(db, "dishes"), where("gh4", "in", chunk))),
-    ]);
-    a.forEach((d) => ps.push({ id: d.id, ...d.data() }));
-    b.forEach((d) => ds.push({ id: d.id, ...d.data() }));
+    (await getDocs(query(collection(db, "places"), where("gh4", "in", cells.slice(i, i + 30))))).forEach((d) => ps.push({ id: d.id, ...d.data() }));
   }
-  S.places = ps; S.dishes = ds; S.loaded = true;
+  // A whole area can hold tens of thousands of dishes: load the menus of the nearest places that
+  // have one (up to a budget) plus every rated dish nearby. Other menus load when a place is opened.
+  const near = ps.map((p) => [p, km(S.here, p)]).filter(([, k]) => k <= 16).sort((a, b) => a[1] - b[1]).map(([p]) => p);
+  const withMenus = near.filter((p) => p.dishCount > 0);
+  const pick = (withMenus.length >= 10 ? withMenus : near).map((p) => p.id);
+  for (let i = 0; i < pick.length && ds.size < 4000; i += 30) {
+    (await getDocs(query(collection(db, "dishes"), where("placeId", "in", pick.slice(i, i + 30))))).forEach((d) => ds.set(d.id, { id: d.id, ...d.data() }));
+  }
+  for (let i = 0; i < cells.length; i += 30) {
+    const r = await getDocs(query(collection(db, "dishes"), where("gh4", "in", cells.slice(i, i + 30)), where("ratingCount", ">", 0), limit(500))).catch(() => null);
+    r?.forEach((d) => ds.set(d.id, { id: d.id, ...d.data() }));
+  }
+  S.places = ps; S.dishes = [...ds.values()]; S.loaded = true;
   // Same as the app: opening Dishcover somewhere new asks for that area's menus.
   if (S.real) {
     const cell = geohash(S.here.lat, S.here.lng, 5);
@@ -142,7 +148,7 @@ function restaurants() {
   let list = S.places
     .filter((p) => !S.cat || (byPlace[p.id] ?? []).some((d) => (d.categories ?? []).includes(S.cat)) || String(p.cuisine).toLowerCase().includes(S.cat))
     .filter((p) => !q || p.name.toLowerCase().includes(q) || (byPlace[p.id] ?? []).some((d) => d.name.toLowerCase().includes(q)))
-    .map((p) => ({ p, k: km(S.here, p), n: (byPlace[p.id] ?? []).length }));
+    .map((p) => ({ p, k: km(S.here, p), n: (byPlace[p.id] ?? []).length || p.dishCount || 0 }));
   const by = { close: (a, b) => a.k - b.k, top: (a, b) => avg(b.p) - avg(a.p) || a.k - b.k, menu: (a, b) => b.n - a.n || a.k - b.k, az: (a, b) => a.p.name.localeCompare(b.p.name) };
   list.sort(by[S.sort]);
   view.innerHTML = `<h1>Restaurants near you</h1>

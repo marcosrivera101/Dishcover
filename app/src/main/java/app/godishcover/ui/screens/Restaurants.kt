@@ -76,14 +76,14 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
 
     val shown = places.asSequence()
         .filter { !favOnly || it.id in saved }
-        .filter { !menuOnly || byPlace[it.id].orEmpty().isNotEmpty() }
+        .filter { !menuOnly || byPlace[it.id].orEmpty().isNotEmpty() || it.dishCount > 0 }
         .filter { cat.isEmpty() || serves(it, cat) }
         .toList()
         .let { list ->
             when (PlaceSort.valueOf(sort)) {
                 PlaceSort.Distance -> list.sortedBy { dist(it) ?: Double.MAX_VALUE }
                 PlaceSort.Rating -> list.sortedWith(compareByDescending<Place> { rating(it) }.thenByDescending { it.ratingCount }.thenBy { dist(it) ?: Double.MAX_VALUE })
-                PlaceSort.Menu -> list.sortedWith(compareByDescending<Place> { byPlace[it.id]?.size ?: 0 }.thenBy { dist(it) ?: Double.MAX_VALUE })
+                PlaceSort.Menu -> list.sortedWith(compareByDescending<Place> { maxOf(byPlace[it.id]?.size ?: 0, it.dishCount.toInt()) }.thenBy { dist(it) ?: Double.MAX_VALUE })
                 PlaceSort.Name -> list.sortedBy { it.name.lowercase() }
             }
         }
@@ -121,7 +121,7 @@ fun RestaurantsScreen(vm: AppViewModel, nav: NavHostController) {
             item { Text("${shown.size} restaurants", style = MaterialTheme.typography.bodySmall, color = Dc.Muted) }
             items(shown, key = { it.id }) { p ->
                 RestaurantRow(
-                    p, dist(p), rating(p), byPlace[p.id]?.size ?: 0, p.id in saved,
+                    p, dist(p), rating(p), maxOf(byPlace[p.id]?.size ?: 0, p.dishCount.toInt()), p.id in saved,
                     FoodArt.forPlace(p.cuisine, byPlace[p.id].orEmpty().flatMap { it.categories }),
                     onSave = { vm.toggleSaved(p.id) },
                 ) { nav.navigate(Routes.place(p.id)) }

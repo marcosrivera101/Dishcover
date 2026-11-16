@@ -28,7 +28,7 @@ import kotlinx.coroutines.tasks.await
  *   flags, reports            create-only moderation queues
  */
 class FirebaseRepo : Repo {
-    private companion object { const val PAGE = 25 }
+    private companion object { const val PAGE = 25; const val DISH_BUDGET = 4000 }
     override val isDemo = false
     private val auth = Firebase.auth
     private val db = Firebase.firestore
@@ -148,14 +148,11 @@ class FirebaseRepo : Repo {
 
     override suspend fun loadNearby(center: LatLng, radiusKm: Double) {
         // Firestore allows 30 values per "in" query, so wide radiuses run a few queries.
-        val chunks = Geo.cellsFor(center, radiusKm).chunked(30)
+        val cells = Geo.cellsFor(center, radiusKm)
         val ps = mutableListOf<Place>()
-        val ds = mutableListOf<Dish>()
-        for (cells in chunks) {
-            ps += db.collection("places").whereIn("gh4", cells).get().await()
+        for (chunk in cells.chunked(30)) runCatching {
+            ps += db.collection("places").whereIn("gh4", chunk).get().await()
                 .documents.mapNotNull { d -> d.toObject(Place::class.java)?.also { it.id = d.id } }
-            ds += db.collection("dishes").whereIn("gh4", cells).get().await()
-                .documents.mapNotNull { d -> d.toObject(Dish::class.java)?.also { it.id = d.id } }
         }
         // Keep saved places that are outside the radius.
         val saved = profile.value?.savedPlaces.orEmpty().filter { id -> ps.none { it.id == id } }.take(20)
@@ -164,7 +161,27 @@ class FirebaseRepo : Repo {
             d.toObject(Place::class.java)?.also { it.id = d.id }?.let { ps += it }
         }
         places.value = ps
-        dishes.value = ds
+
+        // A whole area can hold tens of thousands of dishes, far too many for a phone. Load the menus
+        // of the nearest places that have one, up to a budget, plus every rated dish in the area.
+        // Other menus load when their place is opened.
+        val near = ps.filter { Geo.distanceKm(center, LatLng(it.lat, it.lng)) <= radiusKm }
+            .sortedBy { Geo.distanceKm(center, LatLng(it.lat, it.lng)) }
+        val withMenus = near.filter { it.dishCount > 0 }
+        val pick = (if (withMenus.size >= 10) withMenus else near).map { it.id }
+        val ds = LinkedHashMap<String, Dish>()
+        for (chunk in pick.chunked(30)) {
+            if (ds.size >= DISH_BUDGET) break
+            runCatching {
+                db.collection("dishes").whereIn("placeId", chunk).get().await()
+                    .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
+            }
+        }
+        for (chunk in cells.chunked(30)) runCatching {
+            db.collection("dishes").whereIn("gh4", chunk).whereGreaterThan("ratingCount", 0).limit(500).get().await()
+                .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
+        }
+        dishes.value = ds.values.toList()
     }
 
     override suspend fun upsertPlace(place: Place): Place {
