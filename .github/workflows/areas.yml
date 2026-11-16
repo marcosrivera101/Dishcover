@@ -2,11 +2,15 @@ name: Area menus
 
 # When someone opens the app somewhere new, the app asks for menus there (areas/{cell} in
 # Firestore). This picks up waiting areas, reads the restaurants' menus from their own
-# websites, and writes the dishes into the live app. At most 15 new areas a day.
+# websites, and writes the dishes into the live app. At most 24 areas a day.
 on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
+    inputs:
+      seed:
+        description: "Queue every area of Connecticut first (yes/no)"
+        default: "no"
 
 permissions:
   contents: read
@@ -35,6 +39,7 @@ jobs:
           if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret."; exit 0; fi
           echo "$SA" > sa.json
           npm install --no-audit --no-fund
+          if [ "${{ github.event.inputs.seed }}" = "yes" ]; then GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs seed-ct; fi
           echo "area=$(GOOGLE_APPLICATION_CREDENTIALS=sa.json node areas.mjs next)" >> "$GITHUB_OUTPUT"
       - name: Install the menu reader
         if: steps.next.outputs.area != ''
