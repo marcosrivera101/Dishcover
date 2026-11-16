@@ -103,7 +103,8 @@ async function main() {
     if (!snap.exists || (snap.get("ratingCount") ?? 0) > 0) continue;
     const ds = await db.collection("dishes").where("placeId", "==", id).get();
     if (ds.docs.some((d) => (d.get("ratingCount") ?? 0) > 0)) continue;
-    await commitAll([...ds.docs.map((d) => (b) => b.delete(d.ref)), (b) => b.delete(ref)]);
+    const fs_ = await db.collection("feed").where("placeId", "==", id).get();
+    await commitAll([...ds.docs, ...fs_.docs].map((d) => (b) => b.delete(d.ref)).concat((b) => b.delete(ref)));
     retired++;
   }
   if (retired) console.log(`Retired ${retired} stand-in places`);

@@ -63,10 +63,11 @@ async function geocode(address) {
 
 // The town search also finds same-named towns elsewhere (Manchester, England), so keep Connecticut only.
 const inCT = (o) => o.lat > 40.9 && o.lat < 42.1 && o.lng > -73.8 && o.lng < -71.7;
-const osm = (await overpassTown()).filter((e) => e.tags?.name).map((e) => ({
+const osmAll = (await overpassTown()).filter((e) => e.tags?.name).map((e) => ({
   id: `osm-${e.type[0]}${e.id}`, n: norm(e.tags.name), lat: e.lat ?? e.center?.lat, lng: e.lon ?? e.center?.lon,
   street: (e.tags["addr:housenumber"] ?? "") + " " + (e.tags["addr:street"] ?? ""), website: e.tags.website ?? "",
-})).filter(inCT);
+}));
+const osm = osmAll.filter(inCT);
 log(`${town}: ${osm.length} places in OpenStreetMap`);
 
 const places = [], dishes = [], retire = [];
@@ -77,6 +78,11 @@ for (const p of byPlace.values()) {
   const cands = osm.filter((o) => o.n && (o.n === n || o.n.includes(n) || n.includes(o.n)));
   const hit = cands.find((o) => num && o.street.trim().startsWith(num)) ?? (cands.length === 1 ? cands[0] : null);
   let place;
+  // Earlier imports searched without the Connecticut filter and could pick a same-named place in
+  // another Manchester; retire whatever that old match would have been.
+  const oldCands = osmAll.filter((o) => o.n && (o.n === n || o.n.includes(n) || n.includes(o.n)));
+  const oldHit = oldCands.find((o) => num && o.street.trim().startsWith(num)) ?? (oldCands.length === 1 ? oldCands[0] : null);
+  if (oldHit && !inCT(oldHit)) retire.push(oldHit.id);
   if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
   else {
     const g = p.address && (await geocode(p.address));
