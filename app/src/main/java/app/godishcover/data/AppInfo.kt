@@ -16,6 +16,17 @@ data class ChangeEntry(val versionCode: Int, val version: String, val date: Stri
 object Changelog {
     val ALL = listOf(
         ChangeEntry(
+            5, "0.5", "November 2026",
+            listOf(
+                "Comments on feed posts.",
+                "A map of restaurants near you: tap Map on the Restaurants tab.",
+                "Restaurants show their logo or a photo, and every dish gets a food picture.",
+                "Menus anywhere: open Dishcover somewhere new and we look up the menus of the restaurants around you. All of Connecticut is being added now.",
+                "Dishcover on the web for iPhone users: godishcover.web.app",
+                "Sweet pies now sort under Dessert, not Pizza.",
+            ),
+        ),
+        ChangeEntry(
             4, "0.4", "November 2026",
             listOf(
                 "Dishcover is live: sign in with Google and your ratings, reviews and posts are saved.",
