@@ -1,0 +1,55 @@
+name: Hand-gathered menus
+
+# Town sheets gathered by hand (Muse, Grok) land in tools/menus/handoffs/<town>.jsonl.
+# Pushing one loads it into the live app; the dispatch reloads them all.
+on:
+  push:
+    branches: [main]
+    paths: ["tools/menus/handoffs/**", "tools/menus/import-sheet.mjs"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: area-menus
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tools/menus
+    env:
+      SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Load town sheets
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: sa.json
+        run: |
+          if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret."; exit 1; fi
+          echo "$SA" > sa.json
+          npm install --no-audit --no-fund
+          if [ "${{ github.event_name }}" = "push" ] && ! git diff --name-only HEAD~1 HEAD | grep -q import-sheet.mjs; then
+            files=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- handoffs | sed 's#tools/menus/##')
+          else
+            files=$(ls handoffs/*.jsonl)
+          fi
+          for f in $files; do
+            town=$(basename "$f" .jsonl)
+            echo "::group::$town"
+            node import-sheet.mjs "$f" "hand-$town.json"
+            MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
+            echo "::endgroup::"
+          done
+      - name: Clean up
+        if: always()
+        run: rm -f sa.json
