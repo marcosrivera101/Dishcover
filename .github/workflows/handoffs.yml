@@ -38,7 +38,7 @@ jobs:
           if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret."; exit 1; fi
           echo "$SA" > sa.json
           npm install --no-audit --no-fund
-          if [ "${{ github.event_name }}" = "push" ] && ! git diff --name-only HEAD~1 HEAD | grep -q import-sheet.mjs; then
+          if [ "${{ github.event_name }}" = "push" ] && ! git diff --name-only HEAD~1 HEAD | grep -E '^tools/menus/[^/]+\.mjs$' -q; then
             files=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- handoffs | sed 's#tools/menus/##')
           else
             files=$(ls handoffs/*.jsonl)
@@ -50,7 +50,7 @@ jobs:
             MAX_POSTS=15 node sync-firestore.mjs "hand-$town.json"
             echo "::endgroup::"
           done
-          node stray-places.mjs hand-*.json
+          shopt -s nullglob; node stray-places.mjs hand-*.json
       - name: Clean up
         if: always()
         run: rm -f sa.json
