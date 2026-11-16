@@ -3,7 +3,8 @@
 //
 //   node run.mjs --out hartford-menus.json [--prev previous.json] [--limit 50]
 //
-// With GEMINI_API_KEY set, menu pages are read by Gemini; otherwise a text parser is used.
+// Menu pages are read by a text parser and a heading reader; with GEMINI_API_KEY set, Gemini reads
+// only the pages those two can't.
 
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
@@ -285,14 +286,15 @@ async function main() {
       } else if (p.website && !SKIP_SITES.test(p.website)) {
         const { texts, sources, headed } = await readSite(ctx, p.website);
         const all = texts.join("\n");
-        items = (all.length > 200 && (await gemini(all))) || [];
-        if (items.length < 5) {
-          const seen = new Set();
-          const parsed = texts.flatMap(parseMenuText).filter((it) => !seen.has(it.name.toLowerCase()) && seen.add(it.name.toLowerCase()));
-          if (parsed.length > items.length) items = parsed; // keep Gemini's few over the parser's none
-          const seenH = new Set();
-          const byHeading = headed.filter((it) => !seenH.has(it.name.toLowerCase()) && seenH.add(it.name.toLowerCase()));
-          if (byHeading.length > Math.max(items.length, 7)) items = byHeading;
+        // Free readers first; Gemini (paid) only when they find next to nothing.
+        const seen = new Set();
+        items = texts.flatMap(parseMenuText).filter((it) => !seen.has(it.name.toLowerCase()) && seen.add(it.name.toLowerCase()));
+        const seenH = new Set();
+        const byHeading = headed.filter((it) => !seenH.has(it.name.toLowerCase()) && seenH.add(it.name.toLowerCase()));
+        if (byHeading.length > Math.max(items.length, 7)) items = byHeading;
+        if (items.length < 5 && all.length > 200) {
+          const ai = (await gemini(all)) ?? [];
+          if (ai.length > items.length) items = ai;
         }
         p.menuSource = items.length ? sources.find((s) => /menu/i.test(s)) ?? sources[0] : "";
       }
