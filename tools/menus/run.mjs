@@ -248,10 +248,16 @@ async function gemini(text) {
     },
   };
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    });
-    const j = await r.json();
+    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+    let j;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      });
+      j = await r.json();
+      if (r.status !== 429) break;
+      await new Promise((res) => setTimeout(res, 20000 * (attempt + 1))); // free tier: a few requests a minute
+    }
     if (j.error || !j.candidates?.[0]?.content) { log(`  gemini: ${j.error?.message ?? j.candidates?.[0]?.finishReason ?? j.promptFeedback?.blockReason ?? "no answer"}`); return null; }
     const items = JSON.parse(j.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]");
     return items.filter((i) => i.name).map((i) => ({ name: i.name.trim(), description: (i.description ?? "").trim().slice(0, 240), price: (i.price ?? "").trim(), section: i.section ?? "" }));
