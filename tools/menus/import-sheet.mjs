@@ -45,7 +45,9 @@ async function overpassTown() {
     try {
       const r = await fetch(host, { method: "POST", body: new URLSearchParams({ data: q }), headers: UA });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return (await r.json()).elements;
+      const els = (await r.json()).elements ?? [];
+      if (els.length === 0) throw new Error("no places (Overpass timed out?)");
+      return els;
     } catch (e) { log(`overpass ${host}: ${e.message}`); await new Promise((r) => setTimeout(r, 20000)); }
   }
   // Without OpenStreetMap the places would get new ids and double up with the automatic job's.
