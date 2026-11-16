@@ -63,3 +63,4 @@ textarea { min-height: 80px; resize: vertical; }
 .skeleton { height: 76px; border-radius: 16px; background: linear-gradient(90deg, var(--card), var(--line), var(--card)); background-size: 200% 100%; animation: sh 1.2s infinite; }
 @keyframes sh { to { background-position: -200% 0; } }
 .get { display: block; text-align: center; margin-top: 18px; color: var(--muted); font-size: 13px; }
+[hidden] { display: none !important; }
