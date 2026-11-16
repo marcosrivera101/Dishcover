@@ -286,11 +286,17 @@ private fun FeedCard(item: FeedItem, vm: AppViewModel, nav: NavHostController, l
     Card(onClick = open) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Thumb(item.userName.ifBlank { "D" }, 36, round = true)
+                val bot = item.userId == "dishcover-menu-check"
+                if (bot) {
+                    androidx.compose.foundation.Image(
+                        androidx.compose.ui.res.painterResource(app.godishcover.R.drawable.plate), contentDescription = null,
+                        modifier = Modifier.size(36.dp).clip(androidx.compose.foundation.shape.CircleShape),
+                    )
+                } else Thumb(item.userName.ifBlank { "D" }, 36, round = true)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        when (item.type) {
+                        if (bot) (if (item.type == FeedType.PLACE) "New on Dishcover" else "New on the menu") else when (item.type) {
                             FeedType.MENU -> "${item.userName.ifBlank { "Someone" }} added to a menu"
                             FeedType.PLACE -> "${item.userName.ifBlank { "Someone" }} added a new place"
                             FeedType.REVIEW -> "${item.userName.ifBlank { "Someone" }} reviewed"

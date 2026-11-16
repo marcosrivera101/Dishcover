@@ -23,7 +23,7 @@ object FoodArt {
         Regex("burrito|wrap") to "🌯", Regex("sushi|roll\\b|nigiri|sashimi") to "🍣", Regex("ramen|pho\\b|noodle soup") to "🍜",
         Regex("wing") to "🍗", Regex("fries|tots") to "🍟", Regex("salad") to "🥗", Regex("soup|chowder|stew|bisque") to "🍲",
         Regex("shrimp|prawn") to "🍤", Regex("lobster|crab") to "🦞", Regex("oyster|clam|mussel") to "🦪", Regex("salmon|fish|tuna|cod\\b") to "🐟",
-        Regex("steak|ribeye|sirloin|filet") to "🥩", Regex("rib|brisket|pork") to "🍖", Regex("egg|omelet") to "🍳",
+        Regex("steak|ribeye|sirloin|filet") to "🥩", Regex("rib|brisket|pork") to "🍖", Regex("\\begg|omelet") to "🍳",
         Regex("pancake|waffle|french toast") to "🥞", Regex("bagel") to "🥯", Regex("croissant|pastry") to "🥐",
         Regex("cake|cheesecake|tiramisu") to "🍰", Regex("cookie") to "🍪", Regex("donut|doughnut") to "🍩",
         Regex("ice cream|gelato|sundae") to "🍨", Regex("pie\\b") to "🥧", Regex("coffee|latte|espresso|cappuccino|mocha") to "☕",
