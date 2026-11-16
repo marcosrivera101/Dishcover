@@ -43,7 +43,10 @@ async function overpass() {
  nwr["amenity"="bar"]["name"]["cuisine"](${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e});
  nwr["shop"~"^(bakery|deli|pastry|coffee)$"]["name"](${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e}););
 out center tags;`;
-  for (const host of ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]) {
+  const hosts = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+  // The public servers are often busy; go round them twice with a pause before giving up.
+  for (const [i, host] of [...hosts, ...hosts].entries()) {
+    if (i === hosts.length) await new Promise((r) => setTimeout(r, 60000));
     try {
       const r = await fetch(host, { method: "POST", body: new URLSearchParams({ data: q }), headers: { "User-Agent": "Dishcover menu check (godishcover.com)" } });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -91,6 +94,7 @@ async function loadPlaces() {
     const url = links[p.name] ?? Object.entries(links).find(([k]) => !k.startsWith("_") && norm(k) === norm(p.name))?.[1];
     if (url) { p.website = url; linked++; }
   }
+  if (osm.length === 0) throw new Error("OpenStreetMap returned no places; not publishing a partial run");
   log(`places: ${osm.length} from OpenStreetMap, ${places.length} after adding the extra list, ${linked} with a hand-found menu link`);
   return places;
 }

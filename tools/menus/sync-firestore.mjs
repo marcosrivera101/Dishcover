@@ -76,7 +76,9 @@ async function main() {
   const dishName = new Map(seed.dishes.map((d) => [d.id, d.name]));
   const firstRun = existingDishes.size === 0;
   // Without a changes file, post only for places that got dishes they didn't have, so a rerun stays quiet.
-  const posts = ((firstRun ? null : changes) ?? seed.places.filter((p) => newByPlace.has(p.id)).map((p) => ({
+  // Changes are checked against what's really new in Firestore, so a run that briefly lost places
+  // (OpenStreetMap down) doesn't re-announce them when they come back.
+  const posts = ((firstRun ? null : changes?.filter((c) => newByPlace.has(c.placeId)).map((c) => ({ ...c, added: newByPlace.get(c.placeId) }))) ?? seed.places.filter((p) => newByPlace.has(p.id)).map((p) => ({
     placeId: p.id, placeName: p.name, newPlace: !existingPlaces.has(p.id), added: newByPlace.get(p.id),
   }))).slice(0, MAX_POSTS);
   posts.forEach((c, i) => {
