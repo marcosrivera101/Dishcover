@@ -67,7 +67,7 @@ const osm = (await overpassTown()).filter((e) => e.tags?.name).map((e) => ({
 }));
 log(`${town}: ${osm.length} places in OpenStreetMap`);
 
-const places = [], dishes = [];
+const places = [], dishes = [], retire = [];
 let matched = 0, geocoded = 0, missed = 0;
 for (const p of byPlace.values()) {
   const n = norm(p.name);
@@ -75,7 +75,7 @@ for (const p of byPlace.values()) {
   const cands = osm.filter((o) => o.n && (o.n === n || o.n.includes(n) || n.includes(o.n)));
   const hit = cands.find((o) => num && o.street.trim().startsWith(num)) ?? (cands.length === 1 ? cands[0] : null);
   let place;
-  if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; }
+  if (hit) { matched++; place = { id: hit.id, lat: hit.lat, lng: hit.lng, website: hit.website }; retire.push(`x-${slug(p.name)}-${slug(town)}`); }
   else {
     const g = p.address && (await geocode(p.address));
     if (!g) { missed++; log(`no location for ${p.name} (${p.address})`); continue; }
@@ -103,5 +103,5 @@ for (const p of byPlace.values()) {
   }
 }
 for (const p of places) p.dishCount = dishes.filter((d) => d.placeId === p.id).length;
-fs.writeFileSync(out, JSON.stringify({ area: `${town}, CT (hand-gathered)`, generatedAt: new Date().toISOString(), places, dishes }));
+fs.writeFileSync(out, JSON.stringify({ area: `${town}, CT (hand-gathered)`, generatedAt: new Date().toISOString(), places, dishes, retire }));
 log(`wrote ${out}: ${places.length} places (${matched} matched, ${geocoded} by address, ${missed} skipped), ${dishes.length} dishes`);

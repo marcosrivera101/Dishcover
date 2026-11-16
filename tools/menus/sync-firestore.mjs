@@ -93,6 +93,20 @@ async function main() {
   });
 
   await commitAll(ops);
+
+  // A hand-gathered place first loaded without its OpenStreetMap match got an "x-" id; once it is
+  // matched, drop that stand-in (and its dishes) unless someone has already rated it.
+  let retired = 0;
+  for (const id of seed.retire ?? []) {
+    const ref = db.collection("places").doc(id);
+    const snap = await ref.get();
+    if (!snap.exists || (snap.get("ratingCount") ?? 0) > 0) continue;
+    const ds = await db.collection("dishes").where("placeId", "==", id).get();
+    if (ds.docs.some((d) => (d.get("ratingCount") ?? 0) > 0)) continue;
+    await commitAll([...ds.docs.map((d) => (b) => b.delete(d.ref)), (b) => b.delete(ref)]);
+    retired++;
+  }
+  if (retired) console.log(`Retired ${retired} stand-in places`);
   console.log(`Firestore: ${seed.places.length} places refreshed, ${added} new dishes, ${posts.length} feed posts`);
 }
 
