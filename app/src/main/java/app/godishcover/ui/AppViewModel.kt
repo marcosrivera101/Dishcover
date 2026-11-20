@@ -95,6 +95,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val location = MutableStateFlow<LatLng?>(null)
     val usingRealLocation = MutableStateFlow(false)
+    /** True until the first nearby load finishes, so screens show "finding" instead of "nothing here". */
+    val loadingNearby = MutableStateFlow(true)
+    val loadingCategory = MutableStateFlow<String?>(null)
     val message = MutableStateFlow<String?>(null)
     val busy = MutableStateFlow(false)
 
@@ -126,9 +129,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         var here: LatLng? = null
         if (hasLocationPermission()) {
             here = runCatching {
+                // The last known fix is instant; ask for a fresh one only when there is none.
                 val client = LocationServices.getFusedLocationProviderClient(getApplication<Application>())
-                val loc = client.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, CancellationTokenSource().token).await()
-                    ?: client.lastLocation.await()
+                val loc = client.lastLocation.await()
+                    ?: client.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, CancellationTokenSource().token).await()
                 loc?.let { LatLng(it.latitude, it.longitude) }
             }.getOrNull()
         }
@@ -137,10 +141,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         location.value = center
         runCatching { repo.loadNearby(center, settings.value.radiusKm) }
             .onFailure { message.value = "Couldn't load places: ${it.message}" }
+        loadingNearby.value = false
         if (here != null) runCatching { repo.requestAreaMenus(here) }
         loadFeed(more = false)
         syncAlerts()
         refreshing.value = false
+    }
+
+    /** Fetches more dishes of [category] when the nearest menus don't have enough of it. */
+    fun loadCategory(category: String?) = viewModelScope.launch {
+        if (category == null || loadingCategory.value == category) return@launch
+        loadingCategory.value = category
+        runCatching { repo.loadCategory(category, location.value ?: HARTFORD, settings.value.radiusKm) }
+        loadingCategory.value = null
     }
 
     fun pullRefresh() {

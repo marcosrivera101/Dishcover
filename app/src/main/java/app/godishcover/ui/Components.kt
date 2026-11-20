@@ -382,6 +382,16 @@ fun DemoBanner() {
     )
 }
 
+/** A quiet loading line, used before the first menus arrive. */
+@Composable
+fun Finding(text: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 32.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        CircularProgressIndicator(Modifier.size(20.dp), color = Dc.Wine, strokeWidth = 2.dp)
+        Spacer(Modifier.width(12.dp))
+        Text(text, color = Dc.Muted)
+    }
+}
+
 @Composable
 fun EmptyState(title: String, body: String, action: String? = null, onAction: () -> Unit = {}) {
     Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

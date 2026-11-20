@@ -30,6 +30,8 @@ interface Repo {
 
     /** Loads places and dishes within [radiusKm] of [center]. */
     suspend fun loadNearby(center: LatLng, radiusKm: Double)
+    /** Loads dishes of one [category] within reach, for suggestions beyond the nearest menus. */
+    suspend fun loadCategory(category: String, center: LatLng, radiusKm: Double) {}
     /** Asks the server to look up menus around here, once per area (about 5 km square). */
     suspend fun requestAreaMenus(center: LatLng) {}
 

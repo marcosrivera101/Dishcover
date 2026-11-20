@@ -22,6 +22,14 @@
         { "fieldPath": "ratingCount", "order": "ASCENDING" }
       ]
     }
+    ,{
+      "collectionGroup": "dishes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categories", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "gh4", "order": "ASCENDING" }
+      ]
+    }
   ],
   "fieldOverrides": []
 }

@@ -15,6 +15,9 @@ import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -28,7 +31,7 @@ import kotlinx.coroutines.tasks.await
  *   flags, reports            create-only moderation queues
  */
 class FirebaseRepo : Repo {
-    private companion object { const val PAGE = 25; const val DISH_BUDGET = 4000 }
+    private companion object { const val PAGE = 25; const val DISH_BUDGET = 2500L }
     override val isDemo = false
     private val auth = Firebase.auth
     private val db = Firebase.firestore
@@ -170,18 +173,39 @@ class FirebaseRepo : Repo {
         val withMenus = near.filter { it.dishCount > 0 }
         val pick = (if (withMenus.size >= 10) withMenus else near).map { it.id }
         val ds = LinkedHashMap<String, Dish>()
-        for (chunk in pick.chunked(30)) {
-            if (ds.size >= DISH_BUDGET) break
-            runCatching {
-                db.collection("dishes").whereIn("placeId", chunk).get().await()
-                    .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
-            }
+        // Nearest first, a few places per query, showing each batch as it arrives.
+        var budget = 0L
+        val batches = mutableListOf<List<String>>()
+        var cur = mutableListOf<String>()
+        val counts = ps.associate { it.id to it.dishCount }
+        for (id in pick) {
+            if (budget >= DISH_BUDGET) break
+            cur += id; budget += (counts[id] ?: 0L).coerceAtLeast(20)
+            if (cur.size == 10) { batches += cur; cur = mutableListOf() }
         }
-        for (chunk in cells.chunked(30)) runCatching {
-            db.collection("dishes").whereIn("gh4", chunk).whereGreaterThan("ratingCount", 0).limit(500).get().await()
-                .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
+        if (cur.isNotEmpty()) batches += cur
+        coroutineScope {
+            val rated = cells.chunked(30).map { chunk ->
+                async { runCatching { db.collection("dishes").whereIn("gh4", chunk).whereGreaterThan("ratingCount", 0).limit(500).get().await().documents }.getOrDefault(emptyList()) }
+            }
+            for (group in batches.chunked(3)) {
+                group.map { ids -> async { runCatching { db.collection("dishes").whereIn("placeId", ids).get().await().documents }.getOrDefault(emptyList()) } }
+                    .awaitAll().flatten()
+                    .forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
+                dishes.value = ds.values.toList()
+            }
+            rated.awaitAll().flatten().forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
         }
         dishes.value = ds.values.toList()
+    }
+
+    override suspend fun loadCategory(category: String, center: LatLng, radiusKm: Double) {
+        val have = dishes.value.associateBy { it.id }.toMutableMap()
+        for (chunk in Geo.cellsFor(center, radiusKm).chunked(30)) runCatching {
+            db.collection("dishes").whereArrayContains("categories", category).whereIn("gh4", chunk).limit(400).get().await()
+                .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { have.putIfAbsent(it.id, it) } }
+        }
+        dishes.value = have.values.toList()
     }
 
     override suspend fun upsertPlace(place: Place): Place {

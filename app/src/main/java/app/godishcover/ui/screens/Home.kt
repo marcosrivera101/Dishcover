@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +47,7 @@ import app.godishcover.ui.Chip
 import app.godishcover.ui.ChipFlow
 import app.godishcover.ui.Dc
 import app.godishcover.ui.DishRow
+import app.godishcover.ui.Finding
 import app.godishcover.ui.DishTags
 import app.godishcover.ui.EmptyState
 import app.godishcover.ui.Note
@@ -69,6 +71,7 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
     // Collected so the screen updates when data arrives.
     val profile by vm.profile.collectAsState()
     val dishes by vm.dishes.collectAsState()
+    val loadingNearby by vm.loadingNearby.collectAsState()
     val ratings by vm.myRatings.collectAsState()
     val loc by vm.location.collectAsState()
     val real by vm.usingRealLocation.collectAsState()
@@ -171,7 +174,9 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
             Note("Tagged healthy by the people who added them.")
         }
         if (top.isEmpty() && want.isEmpty()) {
-            if (dishes.isEmpty()) {
+            if (dishes.isEmpty() && loadingNearby) {
+                Finding("Finding dishes near you…")
+            } else if (dishes.isEmpty()) {
                 EmptyState(
                     "No menus near you yet",
                     "Menus come from the people who use the app. Snap a menu at a place you love and it shows up here for everyone.",
@@ -195,6 +200,9 @@ fun SuggestionsScreen(vm: AppViewModel, nav: NavHostController, category: String
     val settings by vm.settings.collectAsState()
     @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, profile, placesNow, settings)
     val meal = remember { AppViewModel.mealNow }
+    val loadingNearby by vm.loadingNearby.collectAsState()
+    val loadingCat by vm.loadingCategory.collectAsState()
+    LaunchedEffect(category) { vm.loadCategory(category) }
     val list = vm.suggestions(category)
     Column(Modifier.fillMaxSize()) {
         TopBar("Suggestions", onBack = { nav.popBackStack() })
@@ -204,7 +212,9 @@ fun SuggestionsScreen(vm: AppViewModel, nav: NavHostController, category: String
         ) {
             val what = if (category == null) "Something good" else catLabel(category)
             Text("$what for ${meal.label.lowercase()}", style = MaterialTheme.typography.headlineMedium)
-            if (list.isEmpty()) {
+            if (list.isEmpty() && (loadingNearby || loadingCat != null)) {
+                Finding("Finding ${if (category == null) "dishes" else catLabel(category).lowercase()} near you…")
+            } else if (list.isEmpty()) {
                 EmptyState(
                     "No ${if (category == null) "" else catLabel(category).lowercase() + " "}dishes near you yet",
                     "Menus come from the people who use the app. Snap a menu at a place you love and it shows up here for everyone.",
