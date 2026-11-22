@@ -9,7 +9,7 @@
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-import { parseMenuText, cleanItem } from "./parse.mjs";
+import { parseMenuText, cleanItem, LINK_ONLY } from "./parse.mjs";
 import { categorize, tagsFor, allergensFor } from "./taxonomy.mjs";
 
 const args = Object.fromEntries(
@@ -315,6 +315,9 @@ async function main() {
         }
         p.menuSource = items.length ? sources.find((s) => /menu/i.test(s)) ?? sources[0] : "";
       }
+      // A page where most "dishes" are described only by link labels is a list of vendors or menus
+      // (a food hall, a restaurant group), not a menu.
+      if (items.length >= 3 && items.filter((it) => LINK_ONLY.test(it.description ?? "")).length * 2 >= items.length) items = [];
       items = items.map(cleanItem).filter(Boolean);
       for (const it of items.slice(0, 200)) {
         dishes.push({

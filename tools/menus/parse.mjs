@@ -93,6 +93,9 @@ export function parseMenuText(text) {
 }
 
 /** Final check on one item, whether it came from the text parser or Gemini. Returns null for junk. */
+/** Descriptions that are only a site's link labels ("Order Online View"). */
+export const LINK_ONLY = /^(\s*(order online|order now|order|view menu|view|learn more|menu|visit website|website|more info)\s*)+$/i;
+
 export function cleanItem(it) {
   let name = (it.name ?? "").replace(/\s+/g, " ").trim();
   if (!name) return null;
@@ -103,6 +106,8 @@ export function cleanItem(it) {
   if (/^(cup|bowl|small|medium|large|regular|classic|premium|garden|half|full|single|double|add)\b[^a-z]*$/i.test(name)) return null; // a size or option, not a dish
   if (/\b(vodka|tequila|whiskey|bourbon|gin|rum|scotch|brandy|liqueur|vermouth|bitters|kahlua|cr[eè]me de)\b/i.test(name) && name.includes(",")) return null;
   if (name.length > 70) return null;
+  if (/^(view|see|order|download|visit|back to|other)\b.*\b(menus?|online|website|pdf)\b/i.test(name)) return null; // a link, not a dish
   const price = (it.price ?? "").trim();
-  return { ...it, name, price: /^\$\d/.test(price) ? price : "" };
+  const description = LINK_ONLY.test(it.description ?? "") ? "" : it.description;
+  return { ...it, name, description, price: /^\$\d/.test(price) ? price : "" };
 }

@@ -17,7 +17,9 @@ except OSError:
 pad = size // 3
 box = d.textbbox((0, 0), "AI", font=font)
 w, h = box[2] - box[0] + pad * 2, box[3] - box[1] + pad * 2
-x, y = img.width - w - size // 2, img.height - h - size // 2
+# Kept well inside the edge so square crops in the app never cut it off.
+m = int(img.width * 0.07)
+x, y = img.width - w - m, img.height - h - m
 d.rounded_rectangle((x, y, x + w, y + h), radius=h // 3, fill=(0, 0, 0, 70))
 d.text((x + pad - box[0], y + pad - box[1]), "AI", font=font, fill=(255, 255, 255, 150))
 Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB").save(dst, quality=88)
