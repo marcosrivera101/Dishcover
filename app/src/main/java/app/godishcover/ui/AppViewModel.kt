@@ -312,7 +312,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         return if (settings.value.healthyFirst) list.sortedByDescending { Suggest.isHealthy(it.dish) } else list
     }
 
-    fun suggestions(category: String?): List<PlaceSuggestion> = Suggest.places(ranked(category), placeMap())
+    /** Breakfast, lunch or dinner, from the clock until the person picks one on Today. */
+    val meal = MutableStateFlow(mealNow)
+
+    fun suggestions(category: String?): List<PlaceSuggestion> {
+        val list = Suggest.rank(category, dishes.value, placeMap(), location.value, profile.value, myRatings.value, meal.value)
+        val sorted = if (settings.value.healthyFirst) list.sortedByDescending { Suggest.isHealthy(it.dish) } else list
+        return Suggest.places(sorted, placeMap())
+    }
 
     fun topRated(): List<DishView> = dishes.value.map { view(it) }
         .filter { (it.myStars ?: 0) >= 4 }

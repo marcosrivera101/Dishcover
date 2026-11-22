@@ -75,8 +75,8 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
     val ratings by vm.myRatings.collectAsState()
     val loc by vm.location.collectAsState()
     val real by vm.usingRealLocation.collectAsState()
-    val meal = remember { AppViewModel.mealNow }
-    var mood by rememberSaveable { mutableStateOf(Categories.defaultMood(meal)) }
+    val meal by vm.meal.collectAsState()
+    var mood by rememberSaveable(meal) { mutableStateOf(Categories.defaultMood(meal)) }
     var moreMoods by rememberSaveable { mutableStateOf(false) }
     val name = profile?.publicName.orEmpty().substringBefore(' ')
     val placesNow by vm.places.collectAsState()
@@ -102,7 +102,9 @@ fun HomeScreen(vm: AppViewModel, nav: NavHostController) {
                 .border(1.dp, Dc.Line, RoundedCornerShape(20.dp)).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("${meal.label} time", style = MaterialTheme.typography.labelLarge, color = Dc.Wine)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Categories.Meal.entries.forEach { m -> Chip(m.label, on = m == meal, onClick = { vm.meal.value = m }) }
+            }
             Text("What are you in the mood for?", style = MaterialTheme.typography.headlineSmall)
             Note("Your favorites first, then ${meal.hint}. Tap More for every kind of food.")
             val likes = profile?.likes.orEmpty().filter { it in Categories.ALL }
@@ -199,7 +201,7 @@ fun SuggestionsScreen(vm: AppViewModel, nav: NavHostController, category: String
     val placesNow by vm.places.collectAsState()
     val settings by vm.settings.collectAsState()
     @Suppress("UNUSED_VARIABLE") val deps = listOf(dishes, ratings, loc, profile, placesNow, settings)
-    val meal = remember { AppViewModel.mealNow }
+    val meal by vm.meal.collectAsState()
     val loadingNearby by vm.loadingNearby.collectAsState()
     val loadingCat by vm.loadingCategory.collectAsState()
     LaunchedEffect(category) { vm.loadCategory(category) }

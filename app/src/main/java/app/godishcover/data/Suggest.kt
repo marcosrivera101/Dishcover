@@ -22,6 +22,23 @@ object Suggest {
 
     fun isHealthy(d: Dish) = Categories.HEALTHY in d.tags
 
+    private val ALCOHOL = Regex("""\b(beer|ipa|lager|ale|stout|pilsner|cider|seltzer|wine|merlot|cabernet|pinot|chardonnay|prosecco|champagne|sangria|cocktail|margarita|martini|mojito|vodka|tequila|whiskey|bourbon|rum|gin|mimosa|spritz|mule|old fashioned|draft|pint)\b""", RegexOption.IGNORE_CASE)
+    private val MORNING = Regex("""\b(breakfast|egg|eggs|omelet|omelette|pancakes?|waffles?|french toast|bagel|croissant|toast|hash browns?|home fries|bacon,? egg|sausage,? egg|biscuit|grits|oatmeal|granola|yogurt|parfait|crepe|benedict|scramble|frittata|chilaquiles|huevos|burrito|wrap|sandwich|avocado toast|steak and eggs|chicken and waffles)\b""", RegexOption.IGNORE_CASE)
+    private val SWEET = Regex("""\b(donuts?|doughnuts?|munchkins?|cake|cakes|cupcakes?|cheesecake|cookies?|brownies?|ice cream|sundaes?|shakes?|milkshakes?|frosty|gelato|sorbet|churros?|pie|pies|pastry|pastries|danish|cinnamon rolls?|candy|fudge|tiramisu|cannoli|flan|pudding|delights|twists|coolatta|frappe|frappuccino)\b""", RegexOption.IGNORE_CASE)
+    private val MORNING_CATS = setOf("breakfast", "bagels")
+    private val NOT_A_MEAL = setOf("dessert", "ice cream", "coffee", "bubble tea", "smoothies and juice", "donuts", "bakery")
+
+    /** Whether a dish belongs in suggestions for [meal]. No drinks with alcohol at breakfast; "Surprise me" sticks to meals. */
+    fun fitsMeal(d: Dish, meal: Categories.Meal, category: String?): Boolean {
+        val text = d.name + " " + d.section
+        if (category in Categories.SWEETS_DRINKS) return !(ALCOHOL.containsMatchIn(text) && meal == Categories.Meal.Breakfast)
+        // A meal mood means a meal: no desserts, sweets or drinks unless the person picks one of those moods.
+        if (ALCOHOL.containsMatchIn(text) || SWEET.containsMatchIn(text) || (d.categories.any { it in NOT_A_MEAL } && d.categories.all { it in NOT_A_MEAL || it in Categories.CUISINES || it == "other" })) return false
+        if (category != null) return true
+        // "Surprise me" at breakfast sticks to breakfast food.
+        return meal != Categories.Meal.Breakfast || d.categories.any { it in MORNING_CATS } || MORNING.containsMatchIn(text)
+    }
+
     /** Rated in the last two weeks, busiest first. */
     fun trending(views: List<DishView>, now: Long = System.currentTimeMillis()): List<DishView> =
         views.filter { it.dish.ratingCount > 0 && now - it.dish.lastRatedAt < 14L * 24 * 60 * 60 * 1000 }
@@ -51,9 +68,11 @@ object Suggest {
         me: LatLng?,
         profile: Profile?,
         mine: Map<String, Rating>,
+        meal: Categories.Meal? = null,
     ): List<DishView> {
         val all = dishes.map { view(it, places[it.placeId], me, profile, mine) }
             .filter { it.distanceKm == null || it.distanceKm <= MAX_KM }
+            .filter { meal == null || fitsMeal(it.dish, meal, category) }
         val picked = if (category != null) {
             all.filter { category in it.dish.categories }
         } else {
