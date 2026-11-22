@@ -14,8 +14,9 @@ const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 if (!out || !PLACE || !KEY) { console.error("Needs an output sheet, PLACE and GEMINI_API_KEY."); process.exit(1); }
 const urls = URLS.split(/\s+/).filter((u) => /^https?:\/\//.test(u));
 
-const prompt = "If this photo shows a restaurant menu, list every food and drink item on it with the price exactly as printed " +
-  "(empty when none) and the menu heading it sits under as section. Keep descriptions short. If it is not a menu, return an empty list.";
+const prompt = "Only if this photo shows a printed or written restaurant menu (text listing dishes), list every food and drink item " +
+  "on it with the price exactly as printed (empty when none) and the menu heading it sits under as section. Keep descriptions short. " +
+  "If it is a photo of food, people or the room, or the text is unreadable, return an empty list. Never name dishes from how food looks.";
 const schema = {
   type: "ARRAY",
   items: { type: "OBJECT", properties: { name: { type: "STRING" }, description: { type: "STRING" }, price: { type: "STRING" }, section: { type: "STRING" } }, required: ["name"] },
