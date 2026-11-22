@@ -21,8 +21,8 @@ on:
         description: "Page the photos came from"
         default: ""
       urls:
-        description: "Photo links, separated by spaces or new lines"
-        required: true
+        description: "Photo links, separated by spaces or new lines (empty: use the place's Google photos)"
+        default: ""
 
 permissions:
   contents: write
@@ -46,6 +46,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Google photos
+        if: github.event.inputs.urls == ''
+        env:
+          MAPS_API_KEY: ${{ secrets.PLACES_SERVER_KEY }}
+          PLACE: ${{ github.event.inputs.place }}
+          ADDRESS: ${{ github.event.inputs.address }}
+        run: |
+          node google-photos.mjs "$PLACE" "$ADDRESS" 10 > photos.txt
+          { echo "URLS<<EOF"; cat photos.txt; echo "EOF"; } >> "$GITHUB_ENV"
       - name: Read the photos
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -53,7 +62,7 @@ jobs:
           ADDRESS: ${{ github.event.inputs.address }}
           CUISINE: ${{ github.event.inputs.cuisine }}
           SOURCE: ${{ github.event.inputs.source }}
-          URLS: ${{ github.event.inputs.urls }}
+          URLS: ${{ github.event.inputs.urls || env.URLS }}
           TOWN: ${{ github.event.inputs.town }}
         run: node photo-menu.mjs "handoffs/$TOWN.jsonl"
       - name: Load the town
