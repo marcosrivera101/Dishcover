@@ -159,6 +159,9 @@ fun FeedScreen(vm: AppViewModel, nav: NavHostController) {
     LaunchedEffect(nearEnd, isTimeline, hasMore, loading) {
         if (nearEnd && isTimeline && hasMore && !loading && feed.isNotEmpty()) vm.loadFeed(more = true)
     }
+    // Between one page and the next, "loading" drops for a moment. Treat that gap as still loading so a
+    // short filtered list (New places) doesn't flash between the spinner and the empty message.
+    val fetching = loading || (nearEnd && isTimeline && hasMore && feed.isNotEmpty())
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
@@ -200,7 +203,7 @@ fun FeedScreen(vm: AppViewModel, nav: NavHostController) {
                             if (filter == "all" && trending.isNotEmpty()) {
                                 item(key = "trend-strip") { TrendingStrip(trending.take(8), nav) }
                             }
-                            if (items.isEmpty() && !loading) {
+                            if (items.isEmpty() && !fetching) {
                                 item {
                                     EmptyState(
                                         "Nothing new nearby yet",
@@ -224,7 +227,7 @@ fun FeedScreen(vm: AppViewModel, nav: NavHostController) {
                                     if (n != null) item(key = "news-" + n.link) { NewsRow(n) }
                                 }
                             }
-                            if (loading) item { Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp), color = Dc.Wine, strokeWidth = 2.dp) } }
+                            if (fetching) item(key = "loading") { Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp), color = Dc.Wine, strokeWidth = 2.dp) } }
                             else if (!hasMore && items.isNotEmpty()) item { Note("That's everything so far.", Modifier.padding(vertical = 8.dp)) }
                         }
                     }
