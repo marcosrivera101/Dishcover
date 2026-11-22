@@ -52,8 +52,10 @@ jobs:
       - name: Update the live app
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
         run: |
           if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret yet, so the live app is not updated."; exit 0; fi
           echo "$SA" > sa.json
           GOOGLE_APPLICATION_CREDENTIALS=sa.json node sync-firestore.mjs hartford-menus.json $( [ -s previous.json ] && echo menu-changes.json )
+          GOOGLE_APPLICATION_CREDENTIALS=sa.json MAPS_API_KEY="$MAPS_API_KEY" ONLY_NEW=1 MAX_CHECKS=400 node closed-check.mjs || echo "::warning::closed check failed"
           rm -f sa.json

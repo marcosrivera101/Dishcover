@@ -24,6 +24,8 @@ data class Place(
     var website: String = "",
     /** How many dishes the menu check found, so the app loads menus from places that have one. */
     var dishCount: Long = 0,
+    /** Google lists it as permanently closed; kept only because people rated it. */
+    var closed: Boolean = false,
 )
 
 val Place.average: Double get() = if (ratingCount == 0L) 0.0 else ratingSum.toDouble() / ratingCount
@@ -36,6 +38,10 @@ data class Dish(
     var name: String = "",
     var description: String = "",
     var categories: List<String> = emptyList(),
+    /** The menu's own heading for this dish ("Appetizers", "Tacos"), when the menu has one. */
+    var section: String = "",
+    /** Position on the menu, 1-based (0 when unknown, e.g. added by a person). */
+    var menuIndex: Long = 0,
     var price: String = "",
     /** Allergens printed on the menu, using [Categories.ALLERGIES] labels. */
     var allergens: List<String> = emptyList(),

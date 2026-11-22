@@ -148,6 +148,7 @@ class FirebaseRepo : Repo {
         ref.set(mapOf("status" to "waiting", "requestedAt" to System.currentTimeMillis(), "requestedBy" to uid())).await()
     }
     private val askedAreas = mutableSetOf<String>()
+    private var closedIds: Set<String> = emptySet()
 
     override suspend fun loadNearby(center: LatLng, radiusKm: Double) {
         // Firestore allows 30 values per "in" query, so wide radiuses run a few queries.
@@ -163,6 +164,9 @@ class FirebaseRepo : Repo {
             val d = db.collection("places").document(id).get().await()
             d.toObject(Place::class.java)?.also { it.id = d.id }?.let { ps += it }
         }
+        // Places Google lists as permanently closed stay in the database only for their reviews.
+        closedIds = ps.filter { it.closed }.map { it.id }.toSet()
+        ps.removeAll { it.closed }
         places.value = ps
 
         // A whole area can hold tens of thousands of dishes, far too many for a phone. Load the menus
@@ -196,7 +200,7 @@ class FirebaseRepo : Repo {
             }
             rated.awaitAll().flatten().forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { ds[it.id] = it } }
         }
-        dishes.value = ds.values.toList()
+        dishes.value = ds.values.filter { it.placeId !in closedIds }
     }
 
     override suspend fun loadCategory(category: String, center: LatLng, radiusKm: Double) {
@@ -205,7 +209,7 @@ class FirebaseRepo : Repo {
             db.collection("dishes").whereArrayContains("categories", category).whereIn("gh4", chunk).limit(400).get().await()
                 .documents.forEach { d -> d.toObject(Dish::class.java)?.also { it.id = d.id }?.let { have.putIfAbsent(it.id, it) } }
         }
-        dishes.value = have.values.toList()
+        dishes.value = have.values.filter { it.placeId !in closedIds }
     }
 
     override suspend fun upsertPlace(place: Place): Place {

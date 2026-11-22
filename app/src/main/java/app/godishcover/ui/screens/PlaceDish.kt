@@ -1,6 +1,26 @@
 package app.godishcover.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
+import app.godishcover.data.DishView
+import app.godishcover.data.FoodArt
+import app.godishcover.data.Suggest
+import app.godishcover.ui.Thumb
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -104,9 +124,102 @@ private fun ReviewCard(r: Rating, mine: Boolean, reported: Boolean, onReport: ()
     }
 }
 
+/** Menu item codes like "A001 " or "12. " that menus print before the name. */
+private val ITEM_CODE = Regex("""^(?:[A-Za-z]{1,2}\d{1,4}[.):-]?|\d{1,3}[.)])\s+""")
+fun menuName(name: String): String = name.replace(ITEM_CODE, "").ifBlank { name }
+
+/** Rough menu order for sections when the menu's own order isn't known. */
+private val SECTION_ORDER = listOf(
+    "popular", "special", "combo", "meal deal", "appetizer", "starter", "small plate", "snack", "shareable", "soup", "salad",
+    "breakfast", "brunch", "taco", "burrito", "quesadilla", "nacho", "burger", "sandwich", "sub", "wrap", "pizza", "calzone",
+    "wing", "chicken", "entree", "entrée", "main", "dinner", "plate", "bowl", "pasta", "noodle", "rice", "curry", "seafood",
+    "steak", "rib", "sushi", "roll", "kids", "side", "bakery", "dessert", "sweet", "treat", "ice cream", "shake", "coffee",
+    "drink", "beverage", "tea",
+)
+private fun sectionRank(s: String): Int = SECTION_ORDER.indexOfFirst { it in s.lowercase() }.let { if (it < 0) SECTION_ORDER.size else it }
+
+private fun tidySection(s: String): String {
+    val t = s.trim().trimEnd(':').replace(Regex("\\s+"), " ").take(40)
+    // ALL CAPS headings read as shouting in a list.
+    return if (t.any { it.isLetter() } && t == t.uppercase()) t.lowercase().split(' ').joinToString(" ") { w -> w.replaceFirstChar { it.titlecase() } } else t
+}
+
+private data class MenuGroup(val title: String, val dishes: List<Dish>)
+
+/** Groups a menu by its own headings, or by dish type when the menu came without headings. */
+private fun groupMenu(menu: List<Dish>): List<MenuGroup> {
+    if (menu.isEmpty()) return emptyList()
+    val ordered = menu.any { it.menuIndex > 0 }
+    val byMenu = compareBy<Dish>({ if (it.menuIndex > 0) it.menuIndex else Long.MAX_VALUE }, { menuName(it.name).lowercase() })
+    val sectioned = menu.count { it.section.isNotBlank() } * 2 >= menu.size
+    val grouped = if (sectioned) {
+        menu.groupBy { tidySection(it.section).ifBlank { "More" } }
+    } else {
+        menu.groupBy { d -> d.categories.firstOrNull { it != "other" }?.let { catLabel(it) } ?: "More" }
+    }
+    val groups = grouped.map { (title, ds) -> MenuGroup(title, ds.sortedWith(byMenu)) }
+    return groups.sortedWith(
+        compareBy<MenuGroup>(
+            { it.title == "More" },
+            { g -> if (ordered && sectioned) g.dishes.minOf { if (it.menuIndex > 0) it.menuIndex else Long.MAX_VALUE } else sectionRank(g.title).toLong() },
+            { it.title },
+        ),
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MenuItemRow(v: DishView, onClick: () -> Unit) {
+    val d = v.dish
+    Column(
+        Modifier.fillMaxWidth().testTag("dish").clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.Top) {
+            Text(
+                menuName(d.name), style = MaterialTheme.typography.titleMedium,
+                maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+            )
+            if (d.price.isNotBlank()) {
+                Spacer(Modifier.width(12.dp))
+                Text(d.price, style = MaterialTheme.typography.bodyMedium, color = Dc.Ink)
+            }
+        }
+        if (d.description.isNotBlank()) {
+            Text(d.description, style = MaterialTheme.typography.bodySmall, color = Dc.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        val healthy = Suggest.isHealthy(d)
+        if (v.myStars != null || v.wanted || d.ratingCount > 0 || healthy || v.allergyHit) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                v.myStars?.let { Tag("You $it★", TagKind.You) }
+                if (v.wanted && v.myStars == null) Tag("Want to try", TagKind.Try)
+                if (d.ratingCount > 0) Tag("Everyone " + String.format("%.1f", d.average) + " (${d.ratingCount})")
+                if (healthy) Tag("Healthy pick", TagKind.Try)
+                if (v.allergyHit) Tag("Lists your allergy", TagKind.Low)
+            }
+        }
+    }
+    HorizontalDivider(color = Dc.Line, modifier = Modifier.padding(horizontal = 20.dp))
+}
+
+@Composable
+private fun PopularCard(v: DishView, onClick: () -> Unit) {
+    Column(
+        Modifier.width(150.dp).clip(RoundedCornerShape(16.dp)).background(Dc.White).border(1.dp, Dc.Line, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Thumb(v.dish.name, size = 44, emoji = FoodArt.forDish(v.dish.name, v.dish.categories))
+        Text(menuName(v.dish.name), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text("★ " + String.format("%.1f", v.dish.average) + " · ${v.dish.ratingCount}", style = MaterialTheme.typography.labelMedium, color = Dc.Wine)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
     val places by vm.places.collectAsState()
     val dishes by vm.dishes.collectAsState()
     val ratings by vm.myRatings.collectAsState()
@@ -119,8 +232,12 @@ fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
     LaunchedEffect(placeId) { vm.loadPlaceDishes(placeId) }
     val place = places.firstOrNull { it.id == placeId }
     val menu = dishes.filter { it.placeId == placeId }
-    var cat by remember { mutableStateOf("") }
-    val cats = menu.flatMap { it.categories }.distinct().sortedBy { Categories.ALL.indexOf(it) }
+    var query by remember(placeId) { mutableStateOf("") }
+    val shown = if (query.isBlank()) menu else menu.filter {
+        it.name.contains(query, ignoreCase = true) || it.description.contains(query, ignoreCase = true) || it.section.contains(query, ignoreCase = true)
+    }
+    val groups = remember(shown) { groupMenu(shown) }
+    val popular = menu.filter { it.ratingCount > 0 }.sortedByDescending { it.average * 10 + it.ratingCount.coerceAtMost(20) / 20.0 }.take(8)
     val saved = placeId in profile?.savedPlaces.orEmpty()
     val mine = placeRatings[placeId]
     var stars by remember(placeId, mine) { mutableIntStateOf(mine?.stars ?: 0) }
@@ -135,6 +252,23 @@ fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
         reviews.clear(); reviews.addAll(list)
     }
 
+    val list = rememberLazyListState()
+    val tabsRow = rememberLazyListState()
+    val showTabs = groups.size > 1
+    // LazyColumn positions: the header, then Popular, then the sticky section bar, then each section.
+    val firstSection = 1 + (if (popular.isNotEmpty() && query.isBlank()) 1 else 0) + (if (showTabs) 1 else 0)
+    val headerAt = remember(groups, firstSection) {
+        var i = firstSection
+        groups.map { g -> i.also { i += 1 + g.dishes.size } }
+    }
+    val current by remember(headerAt) {
+        derivedStateOf {
+            val top = list.firstVisibleItemIndex + 1
+            headerAt.indexOfLast { it <= top }.coerceAtLeast(0)
+        }
+    }
+    LaunchedEffect(current) { if (showTabs) runCatching { tabsRow.animateScrollToItem(current) } }
+
     Column(Modifier.fillMaxSize()) {
         TopBar(place?.name ?: "Restaurant", onBack = { nav.popBackStack() }) {
             if (place != null) {
@@ -146,70 +280,105 @@ fun PlaceScreen(vm: AppViewModel, nav: NavHostController, placeId: String) {
                     )
                 }
                 IconButton(onClick = {
-                    val best = menu.sortedByDescending { it.average }.take(3).joinToString(", ") { it.name }
+                    val best = menu.sortedByDescending { it.average }.take(3).joinToString(", ") { menuName(it.name) }
                     shareText(ctx, "${place.name}" + (if (best.isNotBlank()) ": try $best." else ".") + "\n\nFound on Dishcover · godishcover.com")
                 }) { Icon(Icons.Filled.Share, contentDescription = "Share", tint = Dc.Muted) }
             }
         }
-        Column(
-            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (place != null) {
-                val dist = if (loc != null && (place.lat != 0.0 || place.lng != 0.0)) Geo.miles(Geo.distanceKm(loc!!, LatLng(place.lat, place.lng))) else null
-                Note(listOfNotNull(place.address.ifBlank { null }, dist).joinToString(" · "))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (place.ratingCount > 0) Tag("Everyone " + String.format("%.1f", place.average) + " · ${place.ratingCount} ${if (place.ratingCount == 1L) "review" else "reviews"}")
-                    if (saved) Tag("Saved", TagKind.You)
+        LazyColumn(state = list, modifier = Modifier.fillMaxSize()) {
+            item(key = "info") {
+                Column(Modifier.padding(horizontal = 20.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (place != null) {
+                        val dist = if (loc != null && (place.lat != 0.0 || place.lng != 0.0)) Geo.miles(Geo.distanceKm(loc!!, LatLng(place.lat, place.lng))) else null
+                        Note(listOfNotNull(place.address.ifBlank { null }, dist).joinToString(" · "))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (place.ratingCount > 0) Tag("Everyone " + String.format("%.1f", place.average) + " · ${place.ratingCount} ${if (place.ratingCount == 1L) "review" else "reviews"}")
+                            if (menu.isNotEmpty()) Tag("${menu.size} ${if (menu.size == 1) "dish" else "dishes"}")
+                            if (saved) Tag("Saved", TagKind.You)
+                        }
+                        if (place.googlePlaceId != null) GoogleAttribution()
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        SecondaryButton("Add dishes", onClick = { nav.navigate(Routes.add(placeId)) }, modifier = Modifier.weight(1f))
+                        SecondaryButton("Share a bite", onClick = { nav.navigate(Routes.post(placeId)) }, modifier = Modifier.weight(1f))
+                    }
+                    val last = menu.maxOfOrNull { it.confirmedAt } ?: 0L
+                    if (last > 0) Note("Menu last confirmed ${date(last)}")
+                    if (menu.size > 15) {
+                        OutlinedTextField(
+                            query, { query = it.take(40) }, singleLine = true, placeholder = { Text("Search this menu") },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = Dc.Muted) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    if (menu.isEmpty()) Note("No dishes here yet. Add the ones you know and they show up for everyone.")
+                    else if (menu.size < 8) Note("Only part of this menu is in so far. Add the dishes you know and they show up for everyone.")
+                    else if (shown.isEmpty()) Note("Nothing on this menu matches \"$query\".")
                 }
-                if (place.googlePlaceId != null) GoogleAttribution()
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SecondaryButton("Add dishes", onClick = { nav.navigate(Routes.add(placeId)) }, modifier = Modifier.weight(1f))
-                SecondaryButton("Share a bite", onClick = { nav.navigate(Routes.post(placeId)) }, modifier = Modifier.weight(1f))
-            }
-            val last = menu.maxOfOrNull { it.confirmedAt } ?: 0L
-            if (last > 0) Note("Menu last confirmed ${date(last)}")
-            if (cats.size > 1) {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item { Chip("All", cat.isEmpty(), onClick = { cat = "" }) }
-                    items(cats) { c -> Chip(catLabel(c), c == cat, onClick = { cat = c }) }
+            if (popular.isNotEmpty() && query.isBlank()) {
+                item(key = "popular") {
+                    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        SectionTitle("Popular here", Modifier.padding(horizontal = 20.dp))
+                        LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            items(popular, key = { it.id }) { d -> PopularCard(vm.view(d)) { nav.navigate(Routes.dish(d.id)) } }
+                        }
+                    }
                 }
             }
-            if (menu.isEmpty()) {
-                Note("No dishes here yet. Add the ones you know and they show up for everyone.")
+            if (showTabs) {
+                stickyHeader(key = "tabs") {
+                    LazyRow(
+                        state = tabsRow,
+                        modifier = Modifier.fillMaxWidth().background(Dc.Paper).padding(vertical = 10.dp),
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        itemsIndexed(groups, key = { _, g -> g.title }) { i, g ->
+                            Chip(g.title, i == current, onClick = { scope.launch { list.animateScrollToItem(headerAt[i]) } })
+                        }
+                    }
+                }
             }
-            menu.filter { cat.isEmpty() || cat in it.categories }
-                .map { vm.view(it) }
-                .sortedByDescending { it.dish.average }
-                .forEach { v -> DishRow(v, showPlace = false) { nav.navigate(Routes.dish(v.dish.id)) } }
-            Note("Menu added by people who eat here. Something wrong or no longer served? Open the dish and flag it.")
-
-            if (place != null) {
-                SectionTitle("Rate this place")
-                Note("The whole visit: food, service, the room.")
-                StarPicker(stars, { stars = it; savedRating = false })
-                OutlinedTextField(
-                    text, { text = it.take(500); savedRating = false },
-                    label = { Text("Review (optional)") }, supportingText = { Text("${text.length}/500") },
-                    minLines = 2, modifier = Modifier.fillMaxWidth(),
-                )
-                ShareToFeed(share) { share = it }
-                PrimaryButton(
-                    if (savedRating) "Saved" else if (mine != null) "Update review" else "Save review",
-                    onClick = { vm.ratePlace(place, stars, text, share) { savedRating = true; reloadKey++ } },
-                    enabled = stars > 0 && !savedRating, busy = busy,
-                )
+            groups.forEach { g ->
+                item(key = "h-" + g.title) {
+                    Text(
+                        g.title, style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
+                    )
+                }
+                items(g.dishes, key = { "d-" + g.title + it.id }) { d -> MenuItemRow(vm.view(d)) { nav.navigate(Routes.dish(d.id)) } }
             }
-            if (reviews.isNotEmpty()) SectionTitle("Reviews of this place")
-            reviews.forEach { r ->
-                ReviewCard(
-                    r, mine = r.userId == user?.id, reported = r.userId in reported,
-                    onReport = { vm.report(r) { reported.add(r.userId) } },
-                    onBlock = { vm.block(r.userId) { reviews.removeAll { it.userId == r.userId } } },
-                )
+            item(key = "rest") {
+                Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (menu.isNotEmpty()) Note("Menu added by people who eat here. Something wrong or no longer served? Open the dish and flag it.")
+                    if (place != null) {
+                        SectionTitle("Rate this place")
+                        Note("The whole visit: food, service, the room.")
+                        StarPicker(stars, { stars = it; savedRating = false })
+                        OutlinedTextField(
+                            text, { text = it.take(500); savedRating = false },
+                            label = { Text("Review (optional)") }, supportingText = { Text("${text.length}/500") },
+                            minLines = 2, modifier = Modifier.fillMaxWidth(),
+                        )
+                        ShareToFeed(share) { share = it }
+                        PrimaryButton(
+                            if (savedRating) "Saved" else if (mine != null) "Update review" else "Save review",
+                            onClick = { vm.ratePlace(place, stars, text, share) { savedRating = true; reloadKey++ } },
+                            enabled = stars > 0 && !savedRating, busy = busy,
+                        )
+                    }
+                    if (reviews.isNotEmpty()) SectionTitle("Reviews of this place")
+                    reviews.forEach { r ->
+                        ReviewCard(
+                            r, mine = r.userId == user?.id, reported = r.userId in reported,
+                            onReport = { vm.report(r) { reported.add(r.userId) } },
+                            onBlock = { vm.block(r.userId) { reviews.removeAll { it.userId == r.userId } } },
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
             }
-            Spacer(Modifier.height(8.dp))
         }
     }
 }

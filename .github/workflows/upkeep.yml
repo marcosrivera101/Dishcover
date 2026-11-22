@@ -1,0 +1,63 @@
+name: Restaurant upkeep
+
+# Monthly: rechecks places against Google for permanent closures and refreshes chain menus.
+on:
+  schedule:
+    - cron: "0 9 3 * *"
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: "Only report closed places (yes/no)"
+        default: "no"
+      chains:
+        description: "Also refresh chain menus (yes/no)"
+        default: "yes"
+      max:
+        description: "Most places to check this run"
+        default: "2500"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hand-menus
+  cancel-in-progress: false
+
+jobs:
+  upkeep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: tools/menus
+    env:
+      SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      GOOGLE_APPLICATION_CREDENTIALS: sa.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Set up
+        run: |
+          if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret."; exit 1; fi
+          echo "$SA" > sa.json
+          npm install --no-audit --no-fund
+      - name: Chain menus
+        if: github.event_name == 'schedule' || github.event.inputs.chains == 'yes'
+        run: node chain-menus.mjs chain-seed.json && MAX_POSTS=0 node sync-firestore.mjs chain-seed.json
+      - name: Closed restaurants
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          DRY: ${{ github.event.inputs.dry == 'yes' && '1' || '0' }}
+          MAX_CHECKS: ${{ github.event.inputs.max || '2500' }}
+        run: node closed-check.mjs closed-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: closed-report
+          path: tools/menus/closed-report.json
+          if-no-files-found: ignore
+      - name: Clean up
+        if: always()
+        run: rm -f sa.json

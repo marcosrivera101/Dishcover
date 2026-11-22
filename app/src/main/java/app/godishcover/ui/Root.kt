@@ -1,6 +1,8 @@
 package app.godishcover.ui
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -172,8 +174,13 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
     val start = remember { if (settings.startTab == "feed") Routes.FEED else Routes.HOME }
     var showChangelog by remember { mutableStateOf(settings.seenChangelogVersion < Changelog.ALL.first().versionCode) }
 
-    LaunchedEffect(Unit) {
+    // Ask for location as soon as the app opens, so distances and Today's picks are about where you are.
+    val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         vm.refreshLocation()
+    }
+    LaunchedEffect(Unit) {
+        if (vm.hasLocationPermission()) vm.refreshLocation()
+        else askLocation.launch(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION))
         vm.loadNews()
     }
     // Look for a newer build every time the app comes back to the front.

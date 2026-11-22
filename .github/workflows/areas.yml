@@ -68,6 +68,15 @@ jobs:
             echo "::endgroup::"
             area="$(node areas.mjs next)"
           done
+      - name: Take out closed restaurants
+        if: always()
+        continue-on-error: true
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: sa.json
+          ONLY_NEW: "1"
+          MAX_CHECKS: "400"
+        run: test -f sa.json && node closed-check.mjs || true
       - name: Clean up
         if: always()
         run: rm -f sa.json

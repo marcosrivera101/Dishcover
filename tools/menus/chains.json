@@ -1,22 +1,207 @@
 {
-  "_note": "Core items of national chains, names only. Prices vary by location, so they are left blank.",
-  "McDonald's": ["Big Mac", "Quarter Pounder with Cheese", "Double Quarter Pounder with Cheese", "McDouble", "Cheeseburger", "Hamburger", "Double Cheeseburger", "McChicken", "Crispy Chicken Sandwich", "Spicy Crispy Chicken Sandwich", "Filet-O-Fish", "Chicken McNuggets", "World Famous Fries", "Egg McMuffin", "Sausage McMuffin with Egg", "Bacon, Egg & Cheese Biscuit", "Sausage Biscuit", "Hotcakes", "Hash Browns", "Sausage Burrito", "Fruit & Maple Oatmeal", "Apple Pie", "McFlurry with OREO Cookies", "Hot Fudge Sundae", "Vanilla Cone", "Chocolate Shake", "Iced Coffee", "Caramel Frappé"],
-  "Burger King": ["Whopper", "Double Whopper", "Whopper Jr.", "Bacon King", "Impossible Whopper", "Cheeseburger", "Double Cheeseburger", "Original Chicken Sandwich", "Royal Crispy Chicken", "Spicy Royal Crispy Chicken", "Chicken Fries", "Chicken Nuggets", "Big Fish", "French Fries", "Onion Rings", "Croissan'wich", "French Toast Sticks", "Hash Browns", "Hershey's Sundae Pie", "Chocolate Shake"],
-  "Wendy's": ["Dave's Single", "Dave's Double", "Baconator", "Son of Baconator", "Jr. Bacon Cheeseburger", "Spicy Chicken Sandwich", "Classic Chicken Sandwich", "Grilled Chicken Wrap", "Spicy Nuggets", "Crispy Nuggets", "Apple Pecan Salad", "Taco Salad", "Natural-Cut Fries", "Baconator Fries", "Chili", "Baked Potato", "Chocolate Frosty", "Vanilla Frosty", "Breakfast Baconator", "Honey Butter Chicken Biscuit"],
-  "Subway": ["Italian B.M.T.", "Turkey Breast", "Oven Roasted Turkey & Ham", "Steak & Cheese", "Chicken Teriyaki", "Meatball Marinara", "Tuna", "Spicy Italian", "Rotisserie-Style Chicken", "Veggie Delite", "Black Forest Ham", "Cold Cut Combo", "Chicken & Bacon Ranch", "B.L.T.", "Subway Club", "Turkey Italiano Melt", "Chicken Caesar Wrap", "Chopped Salad", "Chocolate Chip Cookie", "Breakfast Egg & Cheese"],
-  "Taco Bell": ["Crunchwrap Supreme", "Chalupa Supreme", "Doritos Locos Tacos", "Crunchy Taco", "Soft Taco", "Cheesy Gordita Crunch", "Quesadilla", "Chicken Quesadilla", "Mexican Pizza", "Burrito Supreme", "Bean Burrito", "Beefy 5-Layer Burrito", "Cheesy Bean and Rice Burrito", "Nachos BellGrande", "Chips and Nacho Cheese Sauce", "Black Bean Crunchwrap Supreme", "Cantina Chicken Bowl", "Cinnamon Twists", "Cinnabon Delights", "Baja Blast Freeze"],
-  "KFC": ["Original Recipe Chicken", "Extra Crispy Chicken", "Kentucky Fried Wings", "Chicken Tenders", "Popcorn Nuggets", "KFC Chicken Sandwich", "Spicy Chicken Sandwich", "Famous Bowl", "Chicken Pot Pie", "Mashed Potatoes and Gravy", "Mac & Cheese", "Coleslaw", "Biscuit", "Secret Recipe Fries", "Corn on the Cob", "Chocolate Chip Cookie"],
-  "Popeyes": ["Classic Chicken Sandwich", "Spicy Chicken Sandwich", "Bonafide Chicken (Mild)", "Bonafide Chicken (Spicy)", "Handcrafted Tenders", "Ghost Pepper Wings", "Butterfly Shrimp", "Cajun Fries", "Red Beans and Rice", "Mac & Cheese", "Mashed Potatoes with Cajun Gravy", "Coleslaw", "Biscuit", "Cajun Rice", "Chicken Po' Boy", "Cinnamon Apple Pie"],
-  "Chick-fil-A": ["Chick-fil-A Chicken Sandwich", "Spicy Chicken Sandwich", "Deluxe Chicken Sandwich", "Grilled Chicken Sandwich", "Chick-fil-A Nuggets", "Grilled Nuggets", "Chick-n-Strips", "Cool Wrap", "Cobb Salad", "Market Salad", "Spicy Southwest Salad", "Waffle Potato Fries", "Mac & Cheese", "Chicken Noodle Soup", "Chick-fil-A Chicken Biscuit", "Hash Brown Scramble Bowl", "Chick-n-Minis", "Cookies & Cream Milkshake", "Frosted Lemonade", "Chocolate Chunk Cookie"],
-  "Domino's": ["Hand Tossed Pepperoni Pizza", "Cheese Pizza", "ExtravaganZZa Pizza", "MeatZZa Pizza", "Pacific Veggie Pizza", "Buffalo Chicken Pizza", "Philly Cheese Steak Pizza", "Wisconsin 6 Cheese Pizza", "Spinach & Feta Pizza", "Chicken Bacon Ranch Pizza", "Thin Crust Pizza", "Chicken Alfredo Pasta", "Italian Sausage Marinara Pasta", "Chicken Wings", "Boneless Chicken", "Parmesan Bread Bites", "Garlic Breadsticks", "Stuffed Cheesy Bread", "Italian Sandwich", "Chocolate Lava Crunch Cake", "Cinnamon Bread Twists"],
-  "Dunkin'": ["Glazed Donut", "Boston Kreme Donut", "Jelly Donut", "Chocolate Frosted Donut", "Old Fashioned Donut", "Munchkins Donut Hole Treats", "Everything Bagel", "Plain Bagel with Cream Cheese", "Bacon, Egg & Cheese", "Sausage, Egg & Cheese", "Wake-Up Wrap", "Avocado Toast", "Hash Browns", "Snackin' Bacon", "Croissant Stuffers", "Muffin", "Hot Coffee", "Iced Coffee", "Cold Brew", "Signature Latte", "Caramel Macchiato", "Coolatta", "Refresher", "Hot Chocolate"],
-  "Starbucks": ["Caffè Latte", "Caramel Macchiato", "Cappuccino", "Caffè Americano", "Pike Place Roast", "Cold Brew", "Iced Brown Sugar Oatmilk Shaken Espresso", "Pink Drink", "Caramel Frappuccino", "Mocha Frappuccino", "Matcha Tea Latte", "Chai Tea Latte", "White Chocolate Mocha", "Pumpkin Spice Latte", "Bacon, Gouda & Egg Sandwich", "Sausage, Cheddar & Egg Sandwich", "Impossible Breakfast Sandwich", "Egg Bites", "Spinach, Feta & Egg White Wrap", "Butter Croissant", "Chocolate Croissant", "Blueberry Muffin", "Banana Bread", "Cake Pop", "Rolled & Steel-Cut Oatmeal"],
-  "Chipotle": ["Burrito", "Burrito Bowl", "Tacos", "Quesadilla", "Salad", "Chicken Burrito Bowl", "Steak Burrito", "Barbacoa Tacos", "Carnitas Burrito", "Sofritas Bowl", "Lifestyle Bowl", "Chips & Guacamole", "Chips & Queso Blanco", "Kid's Build Your Own"],
-  "IHOP": ["Original Buttermilk Pancakes", "Rooty Tooty Fresh 'N Fruity", "Breakfast Sampler", "Chicken & Waffles", "Belgian Waffle", "Original French Toast", "Strawberry Banana Pancakes", "New York Cheesecake Pancakes", "Big Steak Omelette", "Colorado Omelette", "Spinach & Mushroom Omelette", "Crepes", "Ultimate Steakburger", "Crispy Chicken Strips", "Chicken & Bacon Sandwich", "Philly Cheese Steak Stacker", "Hash Browns"],
-  "Denny's": ["Original Grand Slam", "All-American Slam", "Lumberjack Slam", "Moons Over My Hammy", "Build Your Own Grand Slam", "Buttermilk Pancakes", "French Toast Slam", "Ultimate Omelette", "Country-Fried Steak & Eggs", "T-Bone Steak & Eggs", "Bacon Avocado Burger", "Slamburger", "Double Cheeseburger", "Club Sandwich", "Chicken Tenders", "Fit Slam", "Seasoned Fries", "Hash Browns", "Milkshake"],
-  "Golden Krust Caribbean Bakery & Grill": ["Beef Patty", "Spicy Beef Patty", "Chicken Patty", "Jerk Chicken Patty", "Vegetable Patty", "Coco Bread", "Patty in Coco Bread", "Jerk Chicken", "Curry Chicken", "Curry Goat", "Oxtail", "Brown Stew Chicken", "Rice and Peas", "Steamed Cabbage", "Fried Plantains", "Ackee and Saltfish", "Beef Soup", "Rum Cake", "Carrot Cake"],
-  "Little Caesars": ["Classic Pepperoni Pizza", "Classic Cheese Pizza", "ExtraMostBestest Pepperoni Pizza", "Detroit-Style Deep Deep Dish", "3 Meat Treat Pizza", "Ultimate Supreme Pizza", "Crazy Bread", "Italian Cheese Bread", "Caesar Wings", "Crazy Puffs"],
-  "Pizza Hut": ["Pepperoni Pizza", "Supreme Pizza", "Meat Lover's Pizza", "Veggie Lover's Pizza", "Cheese Pizza", "Original Pan Pizza", "Stuffed Crust Pizza", "Big New Yorker", "Bone-Out Wings", "Traditional Wings", "Breadsticks", "Cheese Sticks", "Chicken Alfredo Pasta", "Cinnamon Sticks"],
-  "Five Guys": ["Hamburger", "Cheeseburger", "Bacon Cheeseburger", "Little Hamburger", "Little Cheeseburger", "Hot Dog", "Cheese Dog", "Veggie Sandwich", "Grilled Cheese", "BLT", "Five Guys Style Fries", "Cajun Style Fries", "Milkshake"],
-  "Wingstop": ["Classic Wings", "Boneless Wings", "Crispy Tenders", "Chicken Sandwich", "Lemon Pepper Wings", "Original Hot Wings", "Garlic Parmesan Wings", "Mango Habanero Wings", "Atomic Wings", "Louisiana Rub Wings", "Seasoned Fries", "Cajun Fried Corn", "Veggie Sticks"]
+  "_note": "Standard menus of national chains, grouped the way the chains group them. Prices vary by location, so they are left blank. Each chain maps section name to item names.",
+  "McDonald's": {
+    "Burgers": ["Big Mac", "Quarter Pounder with Cheese", "Double Quarter Pounder with Cheese", "Quarter Pounder with Cheese Deluxe", "Bacon Quarter Pounder with Cheese", "Cheeseburger", "Double Cheeseburger", "McDouble", "Hamburger"],
+    "Chicken and Fish": ["Chicken McNuggets", "McChicken", "McCrispy", "Spicy McCrispy", "Deluxe McCrispy", "Filet-O-Fish"],
+    "Breakfast": ["Egg McMuffin", "Sausage McMuffin with Egg", "Sausage McMuffin", "Bacon, Egg and Cheese Biscuit", "Sausage Biscuit", "Sausage McGriddles", "Bacon, Egg and Cheese McGriddles", "Hotcakes", "Big Breakfast with Hotcakes", "Sausage Burrito", "Hash Browns", "Fruit and Maple Oatmeal"],
+    "Fries and Sides": ["World Famous Fries", "Apple Slices"],
+    "Sweets and Treats": ["McFlurry with Oreo Cookies", "Hot Fudge Sundae", "Hot Caramel Sundae", "Vanilla Cone", "Baked Apple Pie", "Chocolate Chip Cookie", "Chocolate Shake", "Vanilla Shake", "Strawberry Shake"],
+    "McCafe": ["Iced Coffee", "Caramel Frappe", "Mocha Frappe", "Latte", "Caramel Macchiato", "Hot Chocolate", "Strawberry Banana Smoothie"]
+  },
+  "Burger King": {
+    "Flame-Grilled Burgers": ["Whopper", "Double Whopper", "Triple Whopper", "Whopper Jr.", "Bacon King", "Impossible Whopper", "Bacon Cheeseburger", "Cheeseburger", "Double Cheeseburger", "Hamburger", "Rodeo Burger"],
+    "Chicken and Fish": ["Original Chicken Sandwich", "Royal Crispy Chicken Sandwich", "Spicy Royal Crispy Chicken Sandwich", "Chicken Nuggets", "Chicken Fries", "Big Fish Sandwich"],
+    "Breakfast": ["Croissan'wich Sausage, Egg and Cheese", "Croissan'wich Bacon, Egg and Cheese", "Fully Loaded Croissan'wich", "Breakfast Burrito Jr.", "French Toast Sticks", "Hash Browns"],
+    "Sides": ["Classic Fries", "Onion Rings", "Mozzarella Sticks"],
+    "Sweets and Drinks": ["Hershey's Sundae Pie", "Oreo Shake", "Chocolate Shake", "Vanilla Shake", "Soft Serve Cone", "Frozen Fanta"]
+  },
+  "Wendy's": {
+    "Hamburgers": ["Dave's Single", "Dave's Double", "Dave's Triple", "Baconator", "Son of Baconator", "Bacon Double Stack", "Jr. Bacon Cheeseburger", "Jr. Cheeseburger", "Big Bacon Classic"],
+    "Chicken": ["Spicy Chicken Sandwich", "Classic Chicken Sandwich", "Asiago Ranch Classic Chicken Club", "Crispy Chicken Sandwich", "Spicy Chicken Nuggets", "Chicken Nuggets", "Grilled Chicken Wrap"],
+    "Salads": ["Apple Pecan Salad", "Parmesan Caesar Salad", "Taco Salad", "Cobb Salad"],
+    "Breakfast": ["Breakfast Baconator", "Sausage, Egg and Swiss Croissant", "Honey Butter Chicken Biscuit", "Classic Sausage Biscuit", "Seasoned Potatoes", "French Toast Sticks"],
+    "Fries and Sides": ["Natural-Cut Fries", "Baconator Fries", "Chili Cheese Fries", "Chili", "Baked Potato"],
+    "Frosty": ["Chocolate Frosty", "Vanilla Frosty", "Frosty Cream Cold Brew"]
+  },
+  "Subway": {
+    "Signature Subs": ["Italian B.M.T.", "Spicy Italian", "Steak and Cheese", "Chicken and Bacon Ranch", "Sweet Onion Teriyaki", "Meatball Marinara", "Turkey Italiano", "The Philly", "Supreme Meats", "Titan Turkey"],
+    "Classic Subs": ["Turkey Breast", "Oven-Roasted Turkey and Ham", "Black Forest Ham", "Tuna", "Cold Cut Combo", "Rotisserie-Style Chicken", "Veggie Delite", "Roast Beef", "B.L.T."],
+    "Wraps and Bowls": ["Chicken Caesar Wrap", "Steak and Cheese Wrap", "Chicken and Bacon Ranch Bowl", "Italian B.M.T. Bowl", "Tuna Bowl"],
+    "Breakfast": ["Bacon, Egg and Cheese", "Steak, Egg and Cheese", "Black Forest Ham, Egg and Cheese"],
+    "Sides and Sweets": ["Chocolate Chip Cookie", "White Chip Macadamia Nut Cookie", "Double Chocolate Cookie", "Footlong Cookie", "Chips"]
+  },
+  "Taco Bell": {
+    "Tacos": ["Crunchy Taco", "Crunchy Taco Supreme", "Soft Taco", "Soft Taco Supreme", "Nacho Cheese Doritos Locos Tacos", "Nacho Cheese Doritos Locos Tacos Supreme", "Spicy Potato Soft Taco", "Chalupa Supreme", "Black Bean Chalupa Supreme", "Cheesy Gordita Crunch", "Doritos Cheesy Gordita Crunch", "Crispy Chicken Taco"],
+    "Burritos": ["Burrito Supreme", "Bean Burrito", "Beefy 5-Layer Burrito", "Cheesy Bean and Rice Burrito", "Grilled Cheese Burrito", "Steak Grilled Cheese Burrito", "Black Bean Grilled Cheese Burrito", "Beefy Melt Burrito"],
+    "Specialties": ["Crunchwrap Supreme", "Black Bean Crunchwrap Supreme", "Mexican Pizza", "Veggie Mexican Pizza", "Cheesy Roll Up", "Chicken Chipotle Melt", "Quesarito", "Cantina Chicken Bowl", "Power Menu Bowl", "Veggie Power Menu Bowl"],
+    "Quesadillas": ["Cheese Quesadilla", "Chicken Quesadilla", "Steak Quesadilla"],
+    "Nachos": ["Nachos BellGrande", "Nacho Fries", "Chips and Nacho Cheese Sauce"],
+    "Combos": ["Crunchwrap Supreme Combo", "3 Doritos Locos Tacos Combo", "3 Crunchy Tacos Combo", "Burrito Supreme Combo", "Chicken Quesadilla Combo", "Mexican Pizza Combo", "Steak Grilled Cheese Burrito Combo", "Build Your Own Cravings Box"],
+    "Breakfast": ["Breakfast Crunchwrap Sausage", "Breakfast Crunchwrap Bacon", "Breakfast California Crunchwrap", "Breakfast Quesadilla", "Grande Toasted Breakfast Burrito", "Hash Brown"],
+    "Sides and Sweets": ["Cheesy Fiesta Potatoes", "Black Beans", "Black Beans and Rice", "Cinnamon Twists", "Cinnabon Delights"],
+    "Drinks": ["Baja Blast", "Baja Blast Freeze", "Wild Strawberry Freeze"]
+  },
+  "KFC": {
+    "Chicken": ["Original Recipe Chicken", "Extra Crispy Chicken", "Kentucky Fried Wings", "Extra Crispy Tenders", "KFC Nuggets", "8 Piece Bucket", "12 Piece Bucket"],
+    "Sandwiches and Bowls": ["KFC Chicken Sandwich", "Spicy Chicken Sandwich", "Famous Bowl", "Spicy Famous Bowl", "Chicken Pot Pie", "Twister Wrap"],
+    "Sides": ["Mashed Potatoes and Gravy", "Mac and Cheese", "Secret Recipe Fries", "Coleslaw", "Sweet Corn", "Biscuit", "Green Beans"],
+    "Desserts": ["Chocolate Chip Cookie", "Apple Turnover"]
+  },
+  "Popeyes": {
+    "Chicken": ["Classic Chicken (Mild)", "Spicy Chicken", "Classic Chicken Tenders", "Blackened Chicken Tenders", "Ghost Pepper Wings", "Chicken Nuggets", "Signature Chicken Bucket"],
+    "Sandwiches": ["Classic Chicken Sandwich", "Spicy Chicken Sandwich", "Blackened Chicken Sandwich"],
+    "Seafood": ["Butterfly Shrimp", "Flounder Fish Sandwich"],
+    "Sides": ["Cajun Fries", "Red Beans and Rice", "Mashed Potatoes with Cajun Gravy", "Homestyle Mac and Cheese", "Coleslaw", "Buttermilk Biscuit", "Cajun Rice", "Green Beans"],
+    "Desserts": ["Cinnamon Apple Pie", "Chocolate Fudge Pie", "Cinnamon Sugar Beignets"]
+  },
+  "Chick-fil-A": {
+    "Entrees": ["Chick-fil-A Chicken Sandwich", "Chick-fil-A Deluxe Sandwich", "Spicy Chicken Sandwich", "Spicy Deluxe Sandwich", "Grilled Chicken Sandwich", "Grilled Chicken Club Sandwich", "Chick-fil-A Nuggets", "Grilled Nuggets", "Chick-n-Strips", "Grilled Cool Wrap"],
+    "Salads": ["Cobb Salad", "Market Salad", "Spicy Southwest Salad"],
+    "Breakfast": ["Chick-fil-A Chicken Biscuit", "Spicy Chicken Biscuit", "Chick-n-Minis", "Egg White Grill", "Hash Brown Scramble Burrito", "Hash Brown Scramble Bowl", "Bacon, Egg and Cheese Biscuit", "Hash Browns"],
+    "Sides": ["Waffle Potato Fries", "Mac and Cheese", "Chicken Noodle Soup", "Fruit Cup", "Side Salad", "Kale Crunch Side"],
+    "Treats": ["Chocolate Chunk Cookie", "Icedream Cone", "Cookies and Cream Milkshake", "Chocolate Milkshake", "Strawberry Milkshake", "Vanilla Milkshake", "Frosted Lemonade"],
+    "Drinks": ["Lemonade", "Sweet Tea", "Sunjoy"]
+  },
+  "Domino's": {
+    "Specialty Pizzas": ["ExtravaganZZa", "MeatZZa", "Pepperoni Feast", "Philly Cheese Steak Pizza", "Pacific Veggie", "Honolulu Hawaiian", "Deluxe", "Cali Chicken Bacon Ranch", "Buffalo Chicken Pizza", "Ultimate Pepperoni", "Memphis BBQ Chicken", "Spinach and Feta", "Wisconsin 6 Cheese"],
+    "Build Your Own": ["Hand Tossed Pizza", "Crunchy Thin Crust Pizza", "Brooklyn Style Pizza", "Handmade Pan Pizza", "Gluten Free Crust Pizza", "New York Style Pizza"],
+    "Chicken": ["Boneless Chicken", "Hot Buffalo Wings", "BBQ Wings", "Plain Wings"],
+    "Oven-Baked Sandwiches": ["Italian Sandwich", "Chicken Parm Sandwich", "Philly Cheese Steak Sandwich", "Buffalo Chicken Sandwich"],
+    "Pasta": ["Chicken Alfredo Pasta", "Italian Sausage Marinara Pasta", "Chicken Carbonara Pasta", "Pasta Primavera"],
+    "Breads and Sides": ["Garlic Bread Twists", "Parmesan Bread Bites", "Stuffed Cheesy Bread", "Bread Twists"],
+    "Desserts": ["Chocolate Lava Crunch Cake", "Marbled Cookie Brownie", "Cinnamon Bread Twists"]
+  },
+  "Dunkin'": {
+    "Donuts": ["Glazed Donut", "Boston Kreme Donut", "Chocolate Frosted Donut", "Strawberry Frosted Donut", "Jelly Donut", "Old Fashioned Donut", "Blueberry Cake Donut", "Glazed Chocolate Cake Donut", "Coffee Roll", "Munchkins Donut Hole Treats"],
+    "Breakfast Sandwiches": ["Bacon, Egg and Cheese", "Sausage, Egg and Cheese", "Turkey Sausage, Egg and Cheese", "Sourdough Breakfast Sandwich", "Wake-Up Wrap", "Power Breakfast Sandwich"],
+    "Snacks": ["Hash Browns", "Snackin' Bacon", "Stuffed Bagel Minis", "Avocado Toast", "Omelet Bites"],
+    "Bagels and Muffins": ["Everything Bagel", "Plain Bagel", "Cinnamon Raisin Bagel", "Blueberry Muffin", "Coffee Cake Muffin", "Croissant"],
+    "Coffee and Drinks": ["Hot Coffee", "Iced Coffee", "Cold Brew", "Latte", "Iced Latte", "Signature Latte", "Iced Macchiato", "Frozen Coffee", "Dunkin' Refresher", "Hot Chocolate", "Coolatta"]
+  },
+  "Starbucks": {
+    "Hot Coffee": ["Pike Place Roast", "Caffe Latte", "Cappuccino", "Caramel Macchiato", "Caffe Mocha", "White Chocolate Mocha", "Flat White", "Americano", "Blonde Vanilla Latte"],
+    "Cold Coffee": ["Iced Caramel Macchiato", "Cold Brew", "Vanilla Sweet Cream Cold Brew", "Iced Brown Sugar Oatmilk Shaken Espresso", "Iced Latte", "Iced Coffee"],
+    "Frappuccino": ["Caramel Frappuccino", "Mocha Frappuccino", "Java Chip Frappuccino", "Strawberry Creme Frappuccino"],
+    "Refreshers and Tea": ["Strawberry Acai Refresher", "Pink Drink", "Mango Dragonfruit Refresher", "Iced Matcha Latte", "Chai Tea Latte", "Iced Black Tea"],
+    "Breakfast": ["Bacon, Gouda and Egg Sandwich", "Double-Smoked Bacon, Cheddar and Egg Sandwich", "Sausage, Cheddar and Egg Sandwich", "Turkey Bacon, Cheddar and Egg White Sandwich", "Impossible Breakfast Sandwich", "Spinach, Feta and Egg White Wrap", "Egg Bites", "Rolled and Steel-Cut Oatmeal"],
+    "Bakery": ["Butter Croissant", "Chocolate Croissant", "Cheese Danish", "Blueberry Muffin", "Banana Walnut Bread", "Iced Lemon Loaf", "Cake Pop", "Chocolate Chip Cookie"]
+  },
+  "Chipotle": {
+    "Entrees": ["Burrito", "Burrito Bowl", "Quesadilla", "Salad", "Tacos", "Lifestyle Bowl"],
+    "Proteins": ["Chicken", "Steak", "Barbacoa", "Carnitas", "Sofritas", "Chicken al Pastor", "Veggie"],
+    "Sides": ["Chips and Guacamole", "Chips and Queso Blanco", "Chips and Fresh Tomato Salsa", "Chips", "Side of Guacamole"],
+    "Kids": ["Kid's Build Your Own", "Kid's Quesadilla"]
+  },
+  "IHOP": {
+    "Pancakes": ["Original Buttermilk Pancakes", "New York Cheesecake Pancakes", "Strawberry Banana Pancakes", "Chocolate Chocolate Chip Pancakes", "Cinn-A-Stack Pancakes", "Blueberry Pancakes"],
+    "Combos": ["Breakfast Sampler", "Quick 2-Egg Breakfast", "Split Decision Breakfast", "Big Steak Omelette"],
+    "Omelettes": ["Colorado Omelette", "Spinach and Mushroom Omelette", "Bacon Temptation Omelette", "Garden Omelette"],
+    "Waffles, French Toast and Crepes": ["Belgian Waffle", "Chicken and Waffles", "Original French Toast", "Strawberry Banana French Toast", "Nutella Crepes"],
+    "Burgers and Lunch": ["Big Brunch Burger", "Classic Burger", "Crispy Chicken Sandwich", "Chicken Strips", "Country Fried Steak", "Philly Cheesesteak Stacker"]
+  },
+  "Denny's": {
+    "Slams": ["Grand Slam", "Lumberjack Slam", "All-American Slam", "Build Your Own Grand Slam", "Moons Over My Hammy"],
+    "Breakfast": ["Fit Slam", "Loaded Veggie Omelette", "Ultimate Omelette", "Classic Buttermilk Pancakes", "Belgian Waffle", "French Toast Slam", "Country-Fried Steak and Eggs", "T-Bone Steak and Eggs"],
+    "Burgers and Sandwiches": ["Bacon Avocado Cheeseburger", "Double Cheeseburger", "Slamburger", "Club Sandwich", "Super Bird", "Crispy Chicken Sandwich"],
+    "Dinners": ["Chicken Tenders", "Fish and Chips", "Country-Fried Steak", "Grilled Chicken Dinner", "Sirloin Steak"],
+    "Sides and Desserts": ["Hash Browns", "Seasoned Fries", "Mozzarella Sticks", "Pancake Puppies", "Chocolate Lava Cake", "Milkshake"]
+  },
+  "Golden Krust Caribbean Bakery & Grill": {
+    "Patties": ["Beef Patty", "Spicy Beef Patty", "Chicken Patty", "Jerk Chicken Patty", "Vegetable Patty", "Cheese Beef Patty", "Coco Bread"],
+    "Entrees": ["Jerk Chicken", "Curry Chicken", "Brown Stew Chicken", "Oxtail", "Curry Goat", "Escovitch Fish", "Ackee and Saltfish", "BBQ Chicken"],
+    "Sides": ["Rice and Peas", "White Rice", "Steamed Cabbage", "Sweet Plantains", "Fried Dumplings", "Mac and Cheese"],
+    "Bakery and Drinks": ["Bulla Cake", "Hardo Bread", "Carrot Cake", "Rum Cake", "Sorrel", "Ginger Beer"]
+  },
+  "Little Caesars": {
+    "Pizzas": ["Classic Pepperoni Pizza", "Classic Cheese Pizza", "ExtraMostBestest Pepperoni", "Deep!Deep! Dish Pepperoni", "Crazy Puffs", "3 Meat Treat", "Ultimate Supreme", "Hula Hawaiian", "Old World Pepperoni", "Detroit-Style Deep Dish"],
+    "Wings": ["Caesar Wings Oven Roasted", "Caesar Wings Buffalo", "Caesar Wings BBQ", "Caesar Wings Garlic Parmesan"],
+    "Sides": ["Crazy Bread", "Italian Cheese Bread", "Pepperoni Cheese Bread", "Crazy Sauce"]
+  },
+  "Pizza Hut": {
+    "Pizzas": ["Pepperoni Lover's", "Meat Lover's", "Supreme", "Veggie Lover's", "Hawaiian Chicken", "BBQ Lover's", "Original Pan Pizza", "Thin 'N Crispy Pizza", "Stuffed Crust Pizza", "Big New Yorker"],
+    "Melts": ["Pepperoni Lover's Melt", "Meat Lover's Melt", "Buffalo Chicken Melt", "Chicken Bacon Parmesan Melt"],
+    "Wings": ["Traditional Wings", "Boneless Wings"],
+    "Pasta": ["Chicken Alfredo", "Italian Meats Pasta"],
+    "Sides and Desserts": ["Breadsticks", "Cheese Sticks", "Garlic Knots", "Cinnabon Mini Rolls", "Ultimate Hershey's Chocolate Chip Cookie"]
+  },
+  "Five Guys": {
+    "Burgers": ["Hamburger", "Cheeseburger", "Bacon Burger", "Bacon Cheeseburger", "Little Hamburger", "Little Cheeseburger", "Little Bacon Burger", "Little Bacon Cheeseburger"],
+    "Dogs and Sandwiches": ["Hot Dog", "Cheese Dog", "Bacon Dog", "Bacon Cheese Dog", "Grilled Cheese", "Veggie Sandwich", "BLT"],
+    "Fries": ["Five Guys Style Fries", "Cajun Style Fries"],
+    "Shakes": ["Milkshake", "Oreo Milkshake", "Bacon Milkshake"]
+  },
+  "Wingstop": {
+    "Wings": ["Classic Bone-In Wings", "Boneless Wings", "Crispy Tenders", "Chicken Sandwich", "Lemon Pepper Wings", "Original Hot Wings", "Garlic Parmesan Wings", "Louisiana Rub Wings", "Mango Habanero Wings", "Atomic Wings", "Hickory Smoked BBQ Wings", "Hawaiian Wings", "Spicy Korean Q Wings", "Mild Wings"],
+    "Combos": ["Wing Combo", "Boneless Combo", "Tender Combo", "Chicken Sandwich Combo"],
+    "Sides": ["Seasoned Fries", "Cajun Fried Corn", "Veggie Sticks", "Voodoo Fries", "Buffalo Ranch Fries", "Fried Corn", "Rolls", "Brownie"]
+  },
+  "Panera Bread": {
+    "Sandwiches": ["Bacon Turkey Bravo", "Chipotle Chicken Avo Melt", "Toasted Frontega Chicken", "Napa Almond Chicken Salad Sandwich", "Mediterranean Veggie Sandwich", "Turkey and Cheddar", "Smokehouse BBQ Chicken Sandwich", "Classic Grilled Cheese"],
+    "Soups": ["Broccoli Cheddar Soup", "Broccoli Cheddar Bread Bowl", "Chicken Noodle Soup", "Creamy Tomato Soup", "Baked Potato Soup", "French Onion Soup"],
+    "Salads": ["Green Goddess Cobb Salad", "Caesar Salad", "Fuji Apple Salad with Chicken", "Greek Salad", "Asian Sesame Salad with Chicken", "Strawberry Poppyseed Salad"],
+    "Mac and Pasta": ["Mac and Cheese", "Broccoli Cheddar Mac and Cheese"],
+    "Bakery": ["Chocolate Chipper Cookie", "Kitchen Sink Cookie", "Cinnamon Crunch Bagel", "Asiago Bagel", "Bear Claw", "Blueberry Muffin"],
+    "Drinks": ["Charged Lemonade", "Iced Coffee", "Cold Brew", "Frozen Strawberry Lemonade"]
+  },
+  "Panda Express": {
+    "Entrees": ["Orange Chicken", "Beijing Beef", "Broccoli Beef", "Kung Pao Chicken", "Honey Walnut Shrimp", "String Bean Chicken Breast", "Grilled Teriyaki Chicken", "Black Pepper Angus Steak", "Mushroom Chicken", "SweetFire Chicken Breast", "Honey Sesame Chicken Breast", "Super Greens Entree"],
+    "Sides": ["Chow Mein", "Fried Rice", "White Steamed Rice", "Super Greens"],
+    "Appetizers": ["Chicken Egg Roll", "Veggie Spring Roll", "Cream Cheese Rangoon"],
+    "Plates and Bowls": ["Bowl", "Plate", "Bigger Plate", "Family Meal"]
+  },
+  "Applebee's": {
+    "Appetizers": ["Boneless Wings", "Mozzarella Sticks", "Spinach and Artichoke Dip", "Chicken Wonton Tacos", "Brew Pub Pretzels and Beer Cheese Dip", "Loaded Waffle Fries", "Appetizer Sampler"],
+    "Burgers": ["Classic Burger", "Bacon Cheeseburger", "Whisky Bacon Burger", "Quesadilla Burger", "Bourbon Street Burger"],
+    "Chicken": ["Chicken Tenders Platter", "Fiesta Lime Chicken", "Bourbon Street Chicken and Shrimp", "Oriental Chicken Salad", "Clucks and Shrimp"],
+    "Steak and Seafood": ["Bourbon Street Steak", "Classic Sirloin", "Double-Glazed Baby Back Ribs", "Hand-Battered Fish and Chips", "Shrimp Wonton Stir-Fry"],
+    "Pasta": ["Three-Cheese Chicken Penne", "Fried Chicken and Mac", "Shrimp and Parmesan Sirloin"],
+    "Desserts": ["Triple Chocolate Meltdown", "Blondie Brownie", "Maple Butter Blondie"]
+  },
+  "Olive Garden": {
+    "Appetizers": ["Lasagna Fritta", "Fried Mozzarella", "Calamari", "Spinach-Artichoke Dip", "Toasted Ravioli", "Stuffed Ziti Fritta"],
+    "Soups and Salad": ["Famous House Salad", "Zuppa Toscana", "Chicken and Gnocchi Soup", "Minestrone", "Pasta e Fagioli", "Breadsticks"],
+    "Classics": ["Fettuccine Alfredo", "Chicken Alfredo", "Lasagna Classico", "Chicken Parmigiana", "Eggplant Parmigiana", "Tour of Italy", "Spaghetti with Meat Sauce", "Spaghetti and Meatballs", "Five Cheese Ziti al Forno", "Shrimp Scampi", "Chicken Marsala", "Cheese Ravioli"],
+    "Desserts": ["Tiramisu", "Black Tie Mousse Cake", "Chocolate Brownie Lasagna", "Warm Italian Doughnuts", "Sicilian Cheesecake"]
+  },
+  "Jersey Mike's": {
+    "Cold Subs": ["#13 The Original Italian", "#7 Turkey and Provolone", "#9 Club Supreme", "#3 Ham and Provolone", "#4 The Number Four", "#5 The Super Sub", "#8 Club Sub", "#10 Tuna Fish", "#6 Roast Beef and Provolone", "#14 The Veggie"],
+    "Hot Subs": ["#17 Mike's Famous Philly", "#43 Chipotle Cheese Steak", "#56 Big Kahuna Cheese Steak", "#42 Chicken Philly", "#44 Chicken Bacon Ranch Cheese Steak", "#26 Bacon Ranch Chicken Cheese Steak", "#16 Meatball and Cheese", "#38 Chicken Parm", "#41 Pastrami Reuben"],
+    "Wraps and Bowls": ["Chicken Caesar Wrap", "Turkey Wrap", "Sub in a Tub"],
+    "Sides": ["Chips", "Chocolate Chip Cookie", "Brownie"]
+  },
+  "Arby's": {
+    "Roast Beef": ["Classic Roast Beef", "Double Roast Beef", "Half Pound Roast Beef", "Beef 'n Cheddar", "Smokehouse Brisket", "French Dip and Swiss"],
+    "Sandwiches": ["Classic Reuben", "Classic Italian", "Greek Gyro", "Crispy Chicken Sandwich", "Buttermilk Chicken Bacon and Swiss", "Roast Turkey Ranch and Bacon"],
+    "Chicken": ["Chicken Tenders", "Crispy Chicken Nuggets"],
+    "Sides": ["Curly Fries", "Crinkle Fries", "Potato Cakes", "Mozzarella Sticks", "Jalapeno Bites"],
+    "Shakes and Sweets": ["Jamocha Shake", "Chocolate Shake", "Vanilla Shake", "Apple Turnover", "Chocolate Chip Cookie"]
+  },
+  "Papa John's": {
+    "Specialty Pizzas": ["The Works", "The Meats", "Super Hawaiian", "Garden Fresh", "BBQ Chicken Bacon", "Fiery Buffalo Chicken", "Tuscan Six Cheese", "Shaq-a-Roni", "Epic Stuffed Crust Pizza"],
+    "Build Your Own": ["Original Crust Pizza", "Thin Crust Pizza", "Pan Pizza", "NY Style Pizza", "Garlic Epic Stuffed Crust"],
+    "Papadias": ["Italian Papadia", "Philly Cheesesteak Papadia", "Grilled Buffalo Chicken Papadia"],
+    "Wings": ["Bone-In Wings", "Boneless Wings"],
+    "Sides and Desserts": ["Garlic Knots", "Breadsticks", "Cheesesticks", "Papa Bites", "Chocolate Chip Cookie", "Cinnamon Pull Aparts", "Double Chocolate Chip Brownie"]
+  },
+  "Buffalo Wild Wings": {
+    "Wings": ["Traditional Wings", "Boneless Wings", "Naked Tenders", "Hand-Breaded Tenders", "Wing and Tender Combo"],
+    "Shareables": ["Ultimate Nachos", "Mozzarella Sticks", "Cheese Curds", "Street Tacos", "Fried Pickles", "Hatch Queso and Chips", "Everything Pretzel Knots", "Cauliflower Wings"],
+    "Burgers and Sandwiches": ["All-American Cheeseburger", "Smoked Brisket Burger", "Bacon Smashed Burger", "Buffalo Ranch Chicken Sandwich", "Grilled Chicken Club", "Crispy Chicken Wrap"],
+    "Salads": ["Chicken Caesar Salad", "Chopped Cobb Salad"],
+    "Sides and Desserts": ["French Fries", "Seasoned Potato Wedges", "Onion Rings", "Chocolate Fudge Cake"]
+  },
+  "Friendly's": {
+    "Breakfast": ["Big Two-Do Breakfast", "Pancakes", "Belgian Waffle", "French Toast", "Western Omelette"],
+    "Burgers and Melts": ["Big Beef Cheeseburger", "Bacon Cheeseburger", "Honey BBQ Chicken Supermelt", "Patty Melt", "Grilled Cheese"],
+    "Classics": ["Clam Strips", "Chicken Tenders", "Fishamajig", "Fish and Chips", "Hand-Crafted Turkey Club"],
+    "Ice Cream": ["Reese's Pieces Sundae", "Hot Fudge Sundae", "Fribble", "Jim Dandy Sundae", "Wattamelon Roll", "Monster Mint Sundae", "Strawberry Shortcake Sundae", "Ice Cream Cone"]
+  },
+  "Chili's": {
+    "Appetizers": ["Triple Dipper", "Southwestern Eggrolls", "Bone-In Wings", "Boneless Wings", "Skillet Queso", "Awesome Blossom Petals", "Loaded Boneless Wings"],
+    "Burgers": ["Big Smasher", "Oldtimer with Cheese", "Bacon Rancher", "Mushroom Swiss Burger", "Southern Smokehouse Burger"],
+    "Fajitas": ["Chicken Fajitas", "Steak Fajitas", "Shrimp Fajitas", "Trio Fajitas"],
+    "Ribs and Steaks": ["Baby Back Ribs", "Classic Sirloin", "Ribeye"],
+    "Chicken and Seafood": ["Chicken Crispers", "Honey-Chipotle Crispers", "Cajun Chicken Pasta", "Margarita Grilled Chicken", "Chicken Bacon Ranch Quesadilla", "Spicy Shrimp Tacos"],
+    "Desserts": ["Molten Chocolate Cake", "Skillet Chocolate Chip Cookie", "Salted Caramel Cheesecake"]
+  }
 }

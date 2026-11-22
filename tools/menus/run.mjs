@@ -102,6 +102,13 @@ async function loadPlaces() {
 // ---------- chains ----------
 
 const CHAINS = JSON.parse(fs.readFileSync(new URL("./chains.json", import.meta.url)));
+/** A chain's menu as items, keeping its sections. */
+function chainItems(chain) {
+  const menu = CHAINS[chain];
+  if (Array.isArray(menu)) return menu.map((name) => ({ name, description: "", price: "", section: "" }));
+  return Object.entries(menu).flatMap(([section, names]) => names.map((name) => ({ name, description: "", price: "", section })));
+}
+
 function chainFor(p) {
   const n = norm(p.brand || p.name);
   return Object.keys(CHAINS).find((k) => !k.startsWith("_") && n.length >= 3 && (n === norm(k) || n.startsWith(norm(k))));
@@ -290,7 +297,7 @@ async function main() {
       const chain = chainFor(p);
       let items = [];
       if (chain) {
-        items = CHAINS[chain].map((name) => ({ name, description: "", price: "", section: "" }));
+        items = chainItems(chain);
         p.menuSource = "chain";
         p.chain = chain;
       } else if (p.website && !SKIP_SITES.test(p.website)) {

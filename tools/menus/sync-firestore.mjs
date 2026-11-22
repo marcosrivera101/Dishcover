@@ -54,10 +54,14 @@ async function main() {
   }
   let added = 0;
   const newByPlace = new Map(); // placeId -> new dish ids this run
+  // Where each dish sits on its menu (1-based), so the app can show sections in the menu's own order.
+  const menuIndex = new Map();
+  const perPlace = new Map();
+  for (const d of seed.dishes) { const n = (perPlace.get(d.placeId) ?? 0) + 1; perPlace.set(d.placeId, n); menuIndex.set(d.id, n); }
   for (const d of seed.dishes) {
     if (existingDishes.has(d.id)) {
       // Keep ratings; refresh only what the menu reader decides.
-      ops.push((b) => b.set(db.collection("dishes").doc(d.id), { categories: d.categories, tags: d.tags ?? [], allergens: d.allergens ?? [] }, { merge: true }));
+      ops.push((b) => b.set(db.collection("dishes").doc(d.id), { categories: d.categories, tags: d.tags ?? [], allergens: d.allergens ?? [], menuIndex: menuIndex.get(d.id), ...(d.section ? { section: d.section.slice(0, 60) } : {}) }, { merge: true }));
       continue;
     }
     const p = placeById.get(d.placeId);
@@ -66,7 +70,7 @@ async function main() {
     (newByPlace.get(d.placeId) ?? newByPlace.set(d.placeId, []).get(d.placeId)).push(d.id);
     ops.push((b) =>
       b.set(db.collection("dishes").doc(d.id), {
-        placeId: d.placeId, placeName: p.name, gh4: geohash(p.lat, p.lng), name: d.name.slice(0, 80), description: d.description ?? "",
+        placeId: d.placeId, placeName: p.name, gh4: geohash(p.lat, p.lng), name: d.name.slice(0, 80), description: d.description ?? "", section: (d.section ?? "").slice(0, 60), menuIndex: menuIndex.get(d.id),
         categories: d.categories, price: (d.price ?? "").slice(0, 20), allergens: d.allergens ?? [], tags: d.tags ?? [],
         createdBy: BOT.id, createdByName: "Dishcover", createdAt: now, confirmedAt: now, lastRatedAt: 0, ratingSum: 0, ratingCount: 0,
       }),
