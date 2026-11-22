@@ -53,7 +53,8 @@ async function lookup(p) {
     if (!res.ok) throw Object.assign(new Error(json.error?.message ?? `HTTP ${res.status}`), { fatal: res.status === 403 || res.status === 400 });
     const near = (json.places ?? []).filter((g) => g.location && sameName(p.name, g.displayName?.text ?? "") &&
       (!(p.lat || p.lng) || meters(p, { lat: g.location.latitude, lng: g.location.longitude }) < 300));
-    return near[0] ?? null;
+    // When Google has both a closed and an open listing for the same name here (a move or a new owner), it's open.
+    return near.find((g) => g.businessStatus === "OPERATIONAL") ?? near[0] ?? null;
   }
   throw new Error("Places kept failing");
 }
