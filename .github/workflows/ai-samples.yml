@@ -1,0 +1,31 @@
+name: AI photo samples
+
+# Downloads sample dish images, adds the small see-through "AI" mark, and attaches them to the test-builds release.
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "name=url pairs, one per line"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mark and upload
+        env:
+          URLS: ${{ github.event.inputs.urls }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install -q pillow
+          mkdir -p out
+          while IFS='=' read -r name url; do
+            [ -z "$name" ] && continue
+            curl -sSfL -o "out/$name.png" "$url"
+            python3 tools/photos/ai_mark.py "out/$name.png" "out/ai-sample-$name.jpg"
+          done <<< "$URLS"
+          for f in out/ai-sample-*.jpg; do gh release upload test-builds "$f" --clobber; done
