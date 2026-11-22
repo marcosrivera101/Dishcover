@@ -48,7 +48,7 @@ jobs:
         run: node chain-menus.mjs chain-seed.json && MAX_POSTS=0 node sync-firestore.mjs chain-seed.json
       - name: Closed restaurants
         env:
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          MAPS_API_KEY: ${{ secrets.PLACES_SERVER_KEY || secrets.MAPS_API_KEY }}
           DRY: ${{ github.event.inputs.dry == 'yes' && '1' || '0' }}
           MAX_CHECKS: ${{ github.event.inputs.max || '2500' }}
         run: node closed-check.mjs closed-report.json

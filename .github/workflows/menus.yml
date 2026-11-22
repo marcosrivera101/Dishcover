@@ -52,7 +52,7 @@ jobs:
       - name: Update the live app
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          MAPS_API_KEY: ${{ secrets.PLACES_SERVER_KEY || secrets.MAPS_API_KEY }}
         run: |
           if [ -z "$SA" ]; then echo "No FIREBASE_SERVICE_ACCOUNT secret yet, so the live app is not updated."; exit 0; fi
           echo "$SA" > sa.json
