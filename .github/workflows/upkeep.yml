@@ -46,6 +46,8 @@ jobs:
       - name: Chain menus
         if: github.event_name == 'schedule' || github.event.inputs.chains == 'yes'
         run: node chain-menus.mjs chain-seed.json && MAX_POSTS=0 node sync-firestore.mjs chain-seed.json
+      - name: Diet tags
+        run: node retag.mjs
       - name: Closed restaurants
         env:
           MAPS_API_KEY: ${{ secrets.PLACES_SERVER_KEY || secrets.MAPS_API_KEY }}

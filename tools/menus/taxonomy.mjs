@@ -95,7 +95,8 @@ const DISH_CUISINE = [
 ];
 
 const MEAT = /chicken|beef|pork|bacon|ham\b|steak|sausage|pepperoni|turkey|lamb|goat|oxtail|brisket|shrimp|fish|salmon|tuna|crab|lobster|clam|meat|chorizo|prosciutto|salami|pastrami|anchov|carnitas|pernil|veal|duck|wings?\b|jerk|scallop|calamari|octopus|mussel|oyster|cod|tilapia|eel|burger(?!.*(veggie|impossible|beyond|black bean))/;
-const FRIED = /fried|crispy|tempura|battered|breaded|fries|nugget|tender|bacon|alfredo|cream|loaded|buffalo|cheesesteak|philly|\bparm\b|parmigiana|cake|cookie|donut|shake|sundae|brownie|pie\b|carbonara|mac (and|&) cheese|double|triple|deluxe|supreme|stuffed/;
+// Rich or heavy dishes that a healthy-sounding word ("grilled", "bowl", "power") shouldn't rescue.
+const FRIED = /cheese|cheesy|melt\b|queso|nacho|burrito|chimichanga|chalupa|gordita|crunchwrap|pizza|calzone|burger|sausage|pepperoni|hot dog|gravy|syrup|frapp|caramel|chocolate|sweet cream|fried|crispy|tempura|battered|breaded|fries|nugget|tender|bacon|alfredo|cream|loaded|buffalo|cheesesteak|philly|\bparm\b|parmigiana|cake|cookie|donut|shake|sundae|brownie|pie\b|carbonara|mac (and|&) cheese|double|triple|deluxe|supreme|stuffed/;
 const ALCOHOL = /\bbeer|\blight\b.*\b(lager|ale)\b|bud light|miller|coors|michelob|corona|modelo|heineken|stella|guinness|\bipa\b|lager|\bale\b|stout|pilsner|cider|seltzer|wine|merlot|cabernet|pinot|chardonnay|sauvignon|prosecco|champagne|sangria|cocktail|margarita|martini|mojito|vodka|tequila|whiskey|bourbon|\brum\b|\bgin\b|mimosa|spritz/;
 const HEALTHY = /salad|grilled|steamed|\bbowl\b|poke|acai|açaí|smoothie|veggie|vegetable|quinoa|kale|broiled|lean|light|protein|avocado toast|oatmeal|fruit|sashimi|nigiri|lettuce wrap|egg white|baked salmon|roasted vegetables|power|greens|hummus|lentil|chickpea|tofu|edamame|ceviche|pho\b|miso soup|fit slam/;
 
