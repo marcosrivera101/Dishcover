@@ -19,6 +19,7 @@ object Changelog {
             6, "0.6", "November 2026",
             listOf(
                 "Updates install by themselves: Dishcover downloads new versions in the background and installs them when you leave the app. Allow installs once when asked.",
+                "Photos for about 120 of the most common dishes, like burgers, wings and iced coffee. They're AI-made pictures of the dish type, marked \"AI\", not the restaurant's own.",
                 "Restaurant menus are grouped into sections like the restaurant's own menu, with tabs to jump between them and a Popular row.",
                 "Breakfast, lunch or dinner: switch which meal the suggestions are for. No beer or desserts as a meal.",
                 "Closed restaurants are removed and new places are checked automatically.",

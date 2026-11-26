@@ -209,7 +209,7 @@ private fun PopularCard(v: DishView, onClick: () -> Unit) {
             .clickable(onClick = onClick).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Thumb(v.dish.name, size = 44, emoji = FoodArt.forDish(v.dish.name, v.dish.categories))
+        Thumb(v.dish.name, size = 44, emoji = FoodArt.forDish(v.dish.name, v.dish.categories), photo = app.godishcover.data.FoodPhotos.forDish(v.dish.name))
         Text(menuName(v.dish.name), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Text("★ " + String.format("%.1f", v.dish.average) + " · ${v.dish.ratingCount}", style = MaterialTheme.typography.labelMedium, color = Dc.Wine)
     }

@@ -1,0 +1,119 @@
+iced-coffee	a tall glass of iced coffee with milk swirling through ice	iced coffee|iced americano
+cold-brew	a glass of dark cold brew coffee over ice with a splash of cream on top	cold brew
+iced-latte	an iced latte in a clear cup with layers of espresso and milk over ice	iced .*(latte|macchiato|mocha)|shaken espresso
+frozen-coffee	a blended frozen coffee drink topped with whipped cream and caramel drizzle in a clear cup	frapp|frozen coffee|coolatta|blended coffee
+matcha-latte	a green matcha latte in a ceramic cup with latte art	matcha
+latte	a latte in a white ceramic cup with leaf latte art, on a saucer	latte|cappuccino|flat white|macchiato|mocha|chai|cortado
+hot-coffee	a mug of hot black coffee with steam	coffee|americano|espresso|pike place|roast\b
+hot-chocolate	a mug of hot chocolate topped with whipped cream and cocoa dust	hot chocolate|hot cocoa
+iced-tea	a tall glass of iced tea with a lemon wedge and ice	iced tea|sweet tea|black tea|green tea|\btea\b
+refresher	a pink fruit refresher drink with ice and sliced strawberries in a clear cup	refresher|pink drink|dragon ?fruit|lemonade|agua fresca
+smoothie	a strawberry banana smoothie in a tall glass with fresh fruit beside it	smoothie
+milkshake	a thick chocolate milkshake in a tall glass with whipped cream and a straw	shake|frosty|malt\b
+hash-browns	golden crispy hash brown patties on a small plate	hash ?brown
+bacon-egg-cheese	a bacon, egg and cheese breakfast sandwich on a toasted roll	bacon,? egg|sausage,? egg|ham,? egg|egg (and|&) cheese|breakfast sandwich|mcmuffin|egg sandwich|mcgriddle
+biscuit-sandwich	a breakfast biscuit sandwich with sausage and egg	biscuit
+croissant-sandwich	a croissant breakfast sandwich with egg, bacon and melted cheese	croissan'?wich|croissant sandwich
+breakfast-burrito	a breakfast burrito cut in half showing scrambled egg, potato and cheese	breakfast burrito|breakfast crunchwrap|breakfast quesadilla
+breakfast-wrap	a breakfast wrap with egg white, spinach and feta, cut on the diagonal	wake up wrap|egg white wrap|breakfast wrap
+avocado-toast	avocado toast on sourdough with chili flakes and a soft egg	avocado toast
+bagel	a toasted everything bagel with cream cheese	bagel
+croissant	a flaky golden butter croissant	croissant
+blueberry-muffin	a blueberry muffin with a crumbly golden top	muffin
+glazed-donut	a classic glazed ring donut	glazed donut|old fashioned|cake donut|\bdonut\b|doughnut
+frosted-donut	a ring donut with chocolate frosting and rainbow sprinkles	frosted|sprinkle
+filled-donut	a round filled donut dusted with sugar, cut open to show jelly filling	kreme|jelly|cream filled|filled donut|boston cream
+pancakes	a stack of fluffy pancakes with butter and maple syrup	pancake|hotcake|flapjack
+waffle	a golden Belgian waffle with berries and powdered sugar	waffle
+french-toast	thick-cut French toast with powdered sugar and berries	french toast
+omelet	a folded omelet with vegetables and cheese, with toast on the side	omelet|omelette|scrambled|eggs any|two eggs|egg bites
+oatmeal	a bowl of oatmeal topped with fresh berries and brown sugar	oatmeal|oats|porridge|granola
+cheeseburger	a classic cheeseburger with lettuce, tomato and melted American cheese on a sesame bun	cheeseburger|hamburger|burger|whopper|quarter pounder|big mac|mcdouble|dave's single|big bacon classic
+double-cheeseburger	a double cheeseburger with two smashed patties and melted cheese	double|triple|dave's (double|triple)|baconator|stack
+bacon-cheeseburger	a bacon cheeseburger with crispy bacon and cheddar	bacon (cheese)?burger|bacon king|rodeo
+crispy-chicken-sandwich	a crispy fried chicken sandwich with pickles on a brioche bun	chicken sandwich|mccrispy|mcchicken|chicken burger|crispy chicken
+grilled-chicken-sandwich	a grilled chicken breast sandwich with lettuce and tomato	grilled chicken sandwich|chicken club
+fish-sandwich	a fried fish fillet sandwich with tartar sauce and cheese	fish sandwich|filet.?o.?fish|fish fillet
+italian-sub	an Italian cold cut sub with salami, ham, provolone, lettuce and tomato	italian|b ?m ?t|cold cut|(\w+ )?(grinder|sub|hoagie|hero)\b|supreme meats|ham\b
+turkey-sub	a turkey sub sandwich with lettuce, tomato and cheese	turkey
+meatball-sub	a meatball sub with marinara and melted mozzarella	meatball (sub|grinder|marinara|parm)
+cheesesteak	a Philly cheesesteak with shaved steak, onions and melted cheese	cheesesteak|steak (and|&) cheese|philly
+blt	a BLT sandwich on toasted bread	\bb ?l ?t\b
+club-sandwich	a triple-decker club sandwich cut into quarters	club
+tuna-sandwich	a tuna salad sandwich on toasted bread	tuna
+grilled-cheese	a golden grilled cheese sandwich cut in half with melted cheese	grilled cheese|panini|melt\b
+chicken-wrap	a grilled chicken caesar wrap cut in half	(\w+ )?wrap
+hot-dog	a grilled hot dog in a bun with mustard	hot dog|frank|coney
+wings	a plate of buffalo chicken wings with celery and blue cheese	wing
+boneless-wings	boneless buffalo chicken bites tossed in sauce	boneless
+chicken-tenders	golden fried chicken tenders with dipping sauce	tender|finger|strips|chicken fries
+chicken-nuggets	chicken nuggets with a dipping sauce	nugget|mcnugget|popcorn chicken
+fried-chicken	a basket of crispy southern fried chicken pieces	fried chicken|bucket|drumstick|thigh|chicken leg|piece chicken
+french-fries	a basket of golden French fries	fries|wedges
+sweet-potato-fries	sweet potato fries with a dipping sauce	sweet potato
+loaded-fries	cheese fries topped with melted cheese and bacon	cheese fries|chili fries|loaded fries|nacho fries|poutine
+onion-rings	crispy battered onion rings	onion ring
+mozzarella-sticks	fried mozzarella sticks with marinara sauce	mozzarella stick|fried mozzarella|cheese stick
+mac-and-cheese	a bowl of creamy baked mac and cheese	mac (and|&|n) cheese|macaroni
+garlic-knots	garlic knots brushed with butter and parsley	garlic knot|garlic bread|breadstick
+caesar-salad	a Caesar salad with romaine, croutons and shaved parmesan	caesar
+greek-salad	a Greek salad with feta, olives, cucumber and tomato	greek
+cobb-salad	a Cobb salad with chicken, bacon, egg, avocado and blue cheese in rows	cobb|chef salad|antipasto
+grilled-chicken-salad	a grilled chicken salad with mixed greens and vegetables	chicken salad|buffalo chicken salad
+taco-salad	a taco salad in a crispy tortilla bowl	taco salad
+garden-salad	a fresh garden salad with mixed greens, tomato and cucumber	salad
+chicken-noodle-soup	a bowl of chicken noodle soup	chicken noodle|chicken soup|soup the day|soup of the day
+wonton-soup	a bowl of wonton soup with scallions	wonton soup|egg drop|hot (and|&) sour
+french-onion-soup	French onion soup with a melted cheese crust	french onion
+chili	a bowl of beef chili with shredded cheese and sour cream	\bchili\b|chowder|bisque|soup
+cheese-pizza	a whole cheese pizza with bubbly mozzarella	cheese pizza|pizza|\bpie\b|slice
+pepperoni-pizza	a pepperoni pizza with crispy cupped pepperoni	pepperoni
+margherita-pizza	a margherita pizza with fresh basil and mozzarella	margherita|margarita pizza
+buffalo-chicken-pizza	a buffalo chicken pizza with ranch drizzle	buffalo chicken pizza|buffalo pizza
+bbq-chicken-pizza	a barbecue chicken pizza with red onion and cilantro	bbq chicken pizza|barbecue chicken pizza
+meat-lovers-pizza	a meat lovers pizza with sausage, pepperoni and bacon	meat lover|supreme pizza|works pizza|deluxe pizza
+veggie-pizza	a vegetable pizza with peppers, mushrooms and olives	veggie pizza|vegetable pizza|garden pizza
+calzone	a golden baked calzone with marinara on the side	calzone|stromboli
+chicken-parm	chicken parmesan with marinara and melted mozzarella over spaghetti	chicken parm|chicken marsala|chicken francese|chicken piccata
+eggplant-parm	eggplant parmesan layered with marinara and mozzarella	eggplant
+lasagna	a slice of layered beef lasagna	lasagna|lasagne
+penne-vodka	penne alla vodka in a creamy pink sauce	vodka|penne|rigatoni|ziti|ravioli|gnocchi|tortellini
+spaghetti-meatballs	spaghetti and meatballs in marinara	spaghetti|meatball|linguine|bolognese
+chicken-alfredo	fettuccine alfredo with grilled chicken	alfredo|fettuccine|carbonara|pasta
+shrimp-scampi	shrimp scampi over linguine with garlic butter and parsley	scampi
+crunchy-taco	three crunchy beef tacos with lettuce and cheese	crunchy taco|hard taco|doritos locos|tacos?\b|birria
+soft-taco	soft tacos with grilled meat, onion and cilantro	soft taco|street taco|al pastor|carnitas taco|chalupa|gordita
+burrito	a burrito cut in half showing rice, beans and meat	burrito|quesarito|crunchwrap|chimichanga
+quesadilla	a grilled chicken quesadilla cut into wedges with sour cream	quesadilla
+nachos	loaded nachos with cheese, jalapeños and sour cream	nacho
+burrito-bowl	a burrito bowl with rice, beans, chicken, salsa and guacamole	bowl
+chips-and-guac	tortilla chips with a bowl of fresh guacamole	guac|salsa|chips (and|&)
+enchiladas	cheese enchiladas with red sauce	enchilada|tamale|fajita
+fried-rice	a plate of fried rice with egg and vegetables	fried rice|rice
+lo-mein	chicken lo mein noodles with vegetables	lo mein|chow mein|noodle|udon
+general-tso	General Tso's chicken with steamed broccoli	general tso|orange chicken|sesame chicken|sweet (and|&) sour|teriyaki|kung pao
+crab-rangoon	crispy crab rangoon with sweet chili sauce	rangoon
+spring-roll	golden fried spring rolls with dipping sauce	spring roll|egg roll|eggroll
+dumplings	pan-fried dumplings with soy dipping sauce	dumpling|gyoza|potsticker|wonton|bao|momo
+sushi-roll	a plate of sushi rolls	sushi|roll\b|maki|nigiri|sashimi|poke
+ramen	a bowl of tonkotsu ramen with egg, pork and scallions	ramen
+pho	a bowl of Vietnamese pho with beef, herbs and lime	\bpho\b
+pad-thai	pad thai with shrimp, peanuts and lime	pad thai|pad see ew|drunken noodle
+tikka-masala	chicken tikka masala curry with rice and naan	tikka|masala|curry|korma|vindaloo|biryani|naan|samosa
+fried-calamari	fried calamari rings with marinara and lemon	calamari|squid
+shrimp-cocktail	shrimp cocktail with cocktail sauce and lemon	shrimp cocktail|fried shrimp|coconut shrimp|shrimp
+fish-and-chips	beer-battered fish and chips with tartar sauce	fish (and|&|n) chips|fried fish|fish fry|fish
+salmon	a grilled salmon fillet with vegetables	salmon
+steak	a grilled ribeye steak sliced, with herbs	steak|ribeye|sirloin|filet mignon|strip\b|porterhouse|prime rib
+ribs	a rack of barbecue pork ribs	\bribs?\b|brisket|pulled pork|bbq
+gyro	a gyro wrapped in pita with tzatziki, tomato and onion	gyro|shawarma|kebab|souvlaki|falafel
+jerk-chicken	Jamaican jerk chicken with rice and peas	jerk|oxtail|curry goat|rice (and|&) peas
+rice-and-beans	a plate of rice and black beans with fried plantains	beans|plantain|mofongo|empanada|pernil
+chocolate-chip-cookie	chocolate chip cookies	cookie
+brownie	a fudgy chocolate brownie	brownie|blondie
+cheesecake	a slice of New York cheesecake with strawberries	cheesecake
+tiramisu	a slice of tiramisu dusted with cocoa	tiramisu
+cannoli	cannoli filled with ricotta and chocolate chips	cannoli
+chocolate-cake	a slice of chocolate layer cake	cake|cupcake
+sundae	an ice cream sundae with hot fudge, whipped cream and a cherry	sundae|mcflurry|blizzard|banana split
+ice-cream-cone	a soft serve vanilla ice cream cone	cone|ice cream|gelato|soft serve

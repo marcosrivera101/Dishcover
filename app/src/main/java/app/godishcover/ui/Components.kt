@@ -214,13 +214,23 @@ private val THUMB_HUES = listOf(0xFF7B1E2E, 0xFF2F6B4F, 0xFF1F5E8C, 0xFF8A6508, 
 
 /** Initials block standing in for photos. The color is picked from the name so lists look varied. */
 @Composable
-fun Thumb(text: String, size: Int = 52, round: Boolean = false, emoji: String? = null) {
+fun Thumb(text: String, size: Int = 52, round: Boolean = false, emoji: String? = null, photo: String? = null) {
     val hue = Color(THUMB_HUES[Math.floorMod(text.hashCode(), THUMB_HUES.size)])
     val bg = if (Dc.isDark) hue.copy(alpha = 0.28f) else hue.copy(alpha = 0.12f)
+    var failed by remember(photo) { mutableStateOf(false) }
     Box(
         Modifier.size(size.dp).clip(if (round) CircleShape else RoundedCornerShape(12.dp)).background(bg),
         contentAlignment = Alignment.Center,
     ) {
+        if (photo != null && !failed) {
+            coil.compose.AsyncImage(
+                model = photo, contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                modifier = Modifier.size(size.dp),
+                onState = { if (it is coil.compose.AsyncImagePainter.State.Error) failed = true },
+            )
+            return@Box
+        }
         if (emoji != null) {
             Text(emoji, fontSize = (size * 0.52f).sp)
             return@Box
@@ -279,7 +289,7 @@ val LocalPlacePhotos = androidx.compose.runtime.staticCompositionLocalOf<app.god
 fun DishRow(v: DishView, showPlace: Boolean = true, onClick: () -> Unit) {
     Card(Modifier.testTag("dish"), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Thumb(v.dish.name, emoji = FoodArt.forDish(v.dish.name, v.dish.categories))
+            Thumb(v.dish.name, emoji = FoodArt.forDish(v.dish.name, v.dish.categories), photo = app.godishcover.data.FoodPhotos.forDish(v.dish.name))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row {
