@@ -33,6 +33,7 @@ import app.godishcover.data.Place
 import app.godishcover.data.PlaceSuggestion
 import app.godishcover.data.Profile
 import app.godishcover.data.Suggest
+import app.godishcover.data.AutoUpdate
 import app.godishcover.data.Updater
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -226,6 +227,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun checkForUpdate(manual: Boolean) = viewModelScope.launch {
         val r = runCatching { repo.latestRelease() }.getOrNull()
         if (r != null && r.versionCode > BuildConfig.VERSION_CODE && r.apkUrl.startsWith("https://")) {
+            val ctx = getApplication<Application>()
+            // With background updates on and allowed, download quietly and install when the app is closed.
+            if (!manual && AutoUpdate.silent(ctx)) { AutoUpdate.runNow(ctx); return@launch }
             update.value = r
             updateChecked.value = "Version ${r.versionName} is ready."
         } else if (manual) {
@@ -244,7 +248,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val ctx = getApplication<Application>()
         if (updateProgress.value != null) return
         if (Updater.needsInstallPermission(ctx)) {
-            updateError.value = "Allow Dishcover to install updates, then tap Update again."
+            updateError.value = "Allow Dishcover to install updates, then tap Update again. After that, updates install on their own."
             Updater.openInstallPermission(ctx)
             return
         }

@@ -41,6 +41,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        app.godishcover.data.AutoUpdate.visible = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        app.godishcover.data.AutoUpdate.visible = false
+        // Leaving the app is when a downloaded update can install without interrupting anything.
+        if (!isChangingConfigurations) runCatching { app.godishcover.data.AutoUpdate.runNow(this) }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.getStringExtra("open") == "feed") openFeed.value = true

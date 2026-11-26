@@ -1,7 +1,9 @@
 package app.godishcover.data
 
 import android.content.Context
+import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -73,5 +75,38 @@ object Updater {
                 .setDataAndType(uri, "application/vnd.android.package-archive")
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK),
         )
+    }
+
+    /** True when Google Play installed this copy, so Play handles its updates. */
+    fun installedFromPlay(ctx: Context): Boolean {
+        val pm = ctx.packageManager
+        val src = runCatching {
+            if (Build.VERSION.SDK_INT >= 30) pm.getInstallSourceInfo(ctx.packageName).installingPackageName
+            else @Suppress("DEPRECATION") pm.getInstallerPackageName(ctx.packageName)
+        }.getOrNull()
+        return src == "com.android.vending"
+    }
+
+    /**
+     * Installs [file] over this app through PackageInstaller. On Android 12 and newer an app that
+     * updates itself can skip the confirmation screen; if Android still wants a tap, InstallReceiver
+     * shows it (or a notification when the app is in the background).
+     */
+    suspend fun installQuietly(ctx: Context, file: File) = withContext(Dispatchers.IO) {
+        val installer = ctx.packageManager.packageInstaller
+        val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
+            setAppPackageName(ctx.packageName)
+            if (Build.VERSION.SDK_INT >= 31) setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+        }
+        val id = installer.createSession(params)
+        installer.openSession(id).use { session ->
+            session.openWrite("dishcover.apk", 0, file.length()).use { out ->
+                file.inputStream().use { it.copyTo(out) }
+                session.fsync(out)
+            }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0)
+            val done = PendingIntent.getBroadcast(ctx, id, Intent(ctx, InstallReceiver::class.java), flags)
+            session.commit(done.intentSender)
+        }
     }
 }

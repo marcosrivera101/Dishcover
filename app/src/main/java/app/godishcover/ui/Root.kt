@@ -188,6 +188,17 @@ private fun MainNav(vm: AppViewModel, openFeed: Boolean, onOpenedFeed: () -> Uni
         if (settings.autoCheckUpdates) vm.checkForUpdate(manual = false)
         onPauseOrDispose { }
     }
+    // After a background update, say so once.
+    val appCtx = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(Unit) {
+        val last = settings.lastRunVersion
+        if (last != BuildConfig.VERSION_CODE) {
+            if (last in 1 until BuildConfig.VERSION_CODE && !showChangelog) {
+                android.widget.Toast.makeText(appCtx, "Dishcover updated to ${BuildConfig.VERSION_NAME}", android.widget.Toast.LENGTH_LONG).show()
+            }
+            vm.setSettings { it.copy(lastRunVersion = BuildConfig.VERSION_CODE) }
+        }
+    }
     LaunchedEffect(openFeed) {
         if (openFeed) {
             nav.navigate(Routes.FEED) { launchSingleTop = true }

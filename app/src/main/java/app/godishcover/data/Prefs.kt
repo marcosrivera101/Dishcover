@@ -29,6 +29,8 @@ data class Settings(
     val introSeen: Boolean = false,
     /** Version whose "what's new" sheet was last shown. */
     val seenChangelogVersion: Int = 0,
+    /** Build that last ran, to say "Updated" after a background update. */
+    val lastRunVersion: Int = 0,
     /** Newest feed entry the user has looked at (ms), for the "new" badge. */
     val feedSeenAt: Long = 0,
 ) {
@@ -73,6 +75,7 @@ class Prefs(context: Context) {
             autoCheckUpdates = sp.getBoolean("autoCheckUpdates", d.autoCheckUpdates),
             introSeen = sp.getBoolean("introSeen", d.introSeen),
             seenChangelogVersion = sp.getInt("seenChangelogVersion", d.seenChangelogVersion),
+            lastRunVersion = sp.getInt("lastRunVersion", d.lastRunVersion),
             feedSeenAt = sp.getLong("feedSeenAt", d.feedSeenAt),
         ).also { Geo.useKm = it.useKm }
     }
@@ -99,6 +102,7 @@ class Prefs(context: Context) {
             .putBoolean("autoCheckUpdates", s.autoCheckUpdates)
             .putBoolean("introSeen", s.introSeen)
             .putInt("seenChangelogVersion", s.seenChangelogVersion)
+            .putInt("lastRunVersion", s.lastRunVersion)
             .putLong("feedSeenAt", s.feedSeenAt)
             .apply()
     }
@@ -111,6 +115,6 @@ class Prefs(context: Context) {
         val keep = _settings.value
         sp.edit().clear().apply()
         _settings.value = load()
-        update { it.copy(introSeen = keep.introSeen, seenChangelogVersion = keep.seenChangelogVersion) }
+        update { it.copy(introSeen = keep.introSeen, seenChangelogVersion = keep.seenChangelogVersion, lastRunVersion = keep.lastRunVersion) }
     }
 }

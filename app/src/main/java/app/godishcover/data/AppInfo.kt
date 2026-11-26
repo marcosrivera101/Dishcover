@@ -16,6 +16,16 @@ data class ChangeEntry(val versionCode: Int, val version: String, val date: Stri
 object Changelog {
     val ALL = listOf(
         ChangeEntry(
+            6, "0.6", "November 2026",
+            listOf(
+                "Updates install by themselves: Dishcover downloads new versions in the background and installs them when you leave the app. Allow installs once when asked.",
+                "Restaurant menus are grouped into sections like the restaurant's own menu, with tabs to jump between them and a Popular row.",
+                "Breakfast, lunch or dinner: switch which meal the suggestions are for. No beer or desserts as a meal.",
+                "Closed restaurants are removed and new places are checked automatically.",
+                "Fuller menus for big chains, and fixes to Healthy picks.",
+            ),
+        ),
+        ChangeEntry(
             5, "0.5", "November 2026",
             listOf(
                 "Comments on feed posts.",

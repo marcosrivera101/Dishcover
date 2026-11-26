@@ -23,5 +23,6 @@ class DishcoverApp : Application() {
         // Firebase is configured from google-services.json at build time; without it the app runs in demo mode.
         repo = if (BuildConfig.HAS_FIREBASE) FirebaseRepo() else DemoRepo(this)
         places = PlacesSource(this, BuildConfig.MAPS_API_KEY)
+        runCatching { app.godishcover.data.AutoUpdate.schedule(this) }
     }
 }

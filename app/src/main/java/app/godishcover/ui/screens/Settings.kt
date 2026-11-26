@@ -183,7 +183,7 @@ fun SettingsScreen(vm: AppViewModel, nav: NavHostController) {
             HorizontalDivider(color = Dc.Line)
 
             SectionTitle("Updates")
-            SettingRow("Check for updates when the app opens") { Toggle(s.autoCheckUpdates) { v -> vm.setSettings { it.copy(autoCheckUpdates = v) } } }
+            SettingRow("Update automatically in the background") { Toggle(s.autoCheckUpdates) { v -> vm.setSettings { it.copy(autoCheckUpdates = v) }; app.godishcover.data.AutoUpdate.schedule(ctx) } }
             SettingRow("About, updates and change log", onClick = { nav.navigate(Routes.ABOUT) }) { Text("›", color = Dc.Muted) }
             SettingRow("Help and troubleshooting", onClick = { nav.navigate(Routes.HELP) }) { Text("›", color = Dc.Muted) }
             TextButton(onClick = { vm.prefs.resetSettings(); radius = vm.settings.value.radiusMi.toFloat(); vm.setSettings { it } }) {
@@ -273,7 +273,7 @@ fun AboutScreen(vm: AppViewModel, nav: NavHostController) {
                     PrimaryButton("Update now", onClick = { vm.installUpdate() })
                 }
                 err?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Dc.Wine) }
-                Note("Dishcover downloads the new version and asks Android to install it. Your account and ratings stay.")
+                Note("Dishcover downloads the new version and asks Android to install it. Your account and ratings stay. With automatic updates on, new versions install by themselves when you leave the app.")
             } else {
                 SecondaryButton("Check for updates", onClick = { vm.checkForUpdate(manual = true) }, modifier = Modifier.fillMaxWidth())
                 checked?.let { Note(it) }
