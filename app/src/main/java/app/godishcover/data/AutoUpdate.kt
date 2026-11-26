@@ -77,7 +77,7 @@ object AutoUpdate {
         }
         val tap = PendingIntent.getActivity(ctx, 0, confirm, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val note = NotificationCompat.Builder(ctx, CHANNEL)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("A new Dishcover is ready")
             .setContentText("Tap to finish updating.")
             .setContentIntent(tap)

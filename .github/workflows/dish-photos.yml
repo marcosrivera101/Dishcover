@@ -1,0 +1,58 @@
+name: Dish photos
+
+# count: lists the most common dishes (attached to the test-builds release as top-dishes.txt).
+# add: downloads generated dish photos (name=url per line), adds the see-through "AI" mark,
+#      saves them to web/dishes/ and commits, so the website serves them to the app.
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "count or add"
+        default: "count"
+      urls:
+        description: "add: name=url pairs, one per line"
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Count dishes
+        if: github.event.inputs.task == 'count'
+        working-directory: tools/menus
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS: sa.json
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "$SA" > sa.json
+          npm install --no-audit --no-fund
+          cp ../photos/top-dishes.mjs . && node top-dishes.mjs > top-dishes.txt
+          rm -f sa.json
+          gh release upload test-builds top-dishes.txt --clobber
+      - name: Add photos
+        if: github.event.inputs.task == 'add'
+        env:
+          URLS: ${{ github.event.inputs.urls }}
+        run: |
+          pip install -q pillow
+          mkdir -p web/dishes tmp
+          while IFS='=' read -r name url; do
+            name=$(echo "$name" | tr -cd 'a-z0-9-')
+            [ -z "$name" ] && continue
+            if curl -sSfL -o "tmp/$name.img" "$url"; then
+              python3 tools/photos/ai_mark.py "tmp/$name.img" "web/dishes/$name.jpg" || echo "bad image: $name"
+            else echo "download failed: $name"; fi
+          done <<< "$URLS"
+          git config user.name "Dishcover photos"
+          git config user.email "menus@godishcover.com"
+          git add web/dishes
+          git commit -qm "Dish photos" || exit 0
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
